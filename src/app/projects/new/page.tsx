@@ -346,7 +346,7 @@ export default function NewProjectPage() {
                 <div className="space-y-4">
                   <div className="rounded-lg border border-border bg-muted/20 p-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-full bg-muted">
+                      <div className="h-9 w-9 shrink-0 flex items-center justify-center rounded-full bg-muted">
                         <Circle className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div>
@@ -370,7 +370,7 @@ export default function NewProjectPage() {
                         key={check}
                         className="flex items-center gap-2 text-[12px] text-muted-foreground"
                       >
-                        <Circle className="h-3.5 w-3.5 flex-shrink-0" />
+                        <Circle className="h-3.5 w-3.5 shrink-0" />
                         {check}
                       </div>
                     ))}
@@ -413,7 +413,7 @@ export default function NewProjectPage() {
                         key={check}
                         className="flex items-center gap-2 text-[12px] text-emerald-600"
                       >
-                        <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0 text-emerald-500" />
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
                         {check}
                       </div>
                     ))}
