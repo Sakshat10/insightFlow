@@ -7,9 +7,8 @@ export function useLogout() {
 
   return useMutation<void, Error, void>({
     mutationFn: () => AuthService.logout(),
-    onSuccess: () => {
+    onSettled: () => {
       queryClient.setQueryData(queryKeys.auth.currentUser, null);
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.currentUser });
       queryClient.clear(); // Clear all cached queries to avoid data leaks
     },
   });
