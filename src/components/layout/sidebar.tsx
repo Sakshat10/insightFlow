@@ -28,6 +28,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCurrentUser, useLogout } from "@/features/auth";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   {
@@ -68,6 +70,21 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: user } = useCurrentUser();
+  const logoutMutation = useLogout();
+
+  const handleSignOut = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        router.push("/login");
+      },
+    });
+  };
+
+  const username = user?.username || "User";
+  const email = user?.email || "Growth Plan";
+  const initials = username.substring(0, 2).toUpperCase();
 
   return (
     <aside className="flex h-full w-[220px] flex-shrink-0 flex-col border-r border-border bg-sidebar">
@@ -182,15 +199,15 @@ export function Sidebar() {
           <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-sidebar-accent transition-colors outline-none">
             <Avatar className="h-6 w-6 flex-shrink-0">
               <AvatarFallback className="bg-indigo-100 text-indigo-700 text-[10px] font-semibold">
-                MC
+                {initials}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1 text-left">
               <p className="truncate text-[12px] font-medium text-foreground leading-tight">
-                Marcus Chen
+                {username}
               </p>
               <p className="truncate text-[11px] text-muted-foreground leading-tight">
-                Growth Plan
+                {email}
               </p>
             </div>
             <ChevronDown className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
@@ -199,7 +216,9 @@ export function Sidebar() {
             <DropdownMenuItem className="text-[13px]">Profile</DropdownMenuItem>
             <DropdownMenuItem className="text-[13px]">Billing</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-[13px] text-destructive">Sign out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut} className="text-[13px] text-destructive cursor-pointer">
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
