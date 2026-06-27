@@ -75,9 +75,10 @@ export function Sidebar() {
   const logoutMutation = useLogout();
 
   const handleSignOut = () => {
+    if (logoutMutation.isPending) return;
     logoutMutation.mutate(undefined, {
-      onSuccess: () => {
-        router.push("/login");
+      onSettled: () => {
+        router.replace("/login");
       },
     });
   };
@@ -216,8 +217,12 @@ export function Sidebar() {
             <DropdownMenuItem className="text-[13px]">Profile</DropdownMenuItem>
             <DropdownMenuItem className="text-[13px]">Billing</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="text-[13px] text-destructive cursor-pointer">
-              Sign out
+            <DropdownMenuItem
+              onClick={handleSignOut}
+              disabled={logoutMutation.isPending}
+              className="text-[13px] text-destructive cursor-pointer disabled:opacity-50"
+            >
+              {logoutMutation.isPending ? "Signing out..." : "Sign out"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
