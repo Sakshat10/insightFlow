@@ -1,42 +1,55 @@
+import { TokenStorage, TokenData } from "./token-storage";
+import { UserStorage } from "./user-storage";
 import { components } from "@/generated/openapi";
 
 type AuthResponse = components["schemas"]["AuthResponse"];
-
-const STORAGE_KEY = "insightflow_auth";
+type UserResponse = components["schemas"]["UserResponse"];
 
 export class AuthStorage {
-  static saveAuth(auth: AuthResponse): void {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
-    } catch (error) {
-      console.error("Failed to save auth to localStorage", error);
+  static login(auth: AuthResponse): void {
+    if (!auth) return;
+
+    // Extract tokens
+    const tokens: TokenData = {
+      accessToken: auth.accessToken,
+      refreshToken: auth.refreshToken,
+      expiresIn: auth.expiresIn,
+      tokenType: auth.tokenType,
+    };
+    TokenStorage.saveTokens(tokens);
+
+    // Extract user profile details
+    if (auth.user) {
+      UserStorage.saveUser(auth.user);
     }
   }
 
-  static getAuth(): AuthResponse | null {
-    if (typeof window === "undefined") return null;
-    try {
-      const item = localStorage.getItem(STORAGE_KEY);
-      return item ? JSON.parse(item) : null;
-    } catch (error) {
-      console.error("Failed to read auth from localStorage", error);
-      return null;
-    }
+  static logout(): void {
+    TokenStorage.clearTokens();
+    UserStorage.clearUser();
   }
 
-  static removeAuth(): void {
-    if (typeof window === "undefined") return;
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error("Failed to remove auth from localStorage", error);
-    }
+  static clear(): void {
+    TokenStorage.clearTokens();
+    UserStorage.clearUser();
   }
 
   static isAuthenticated(): boolean {
-    const auth = this.getAuth();
-    return !!auth?.accessToken;
+    return TokenStorage.hasToken();
+  }
+
+  static getAccessToken(): string | undefined {
+    const tokens = TokenStorage.getTokens();
+    return tokens?.accessToken;
+  }
+
+  static getRefreshToken(): string | undefined {
+    const tokens = TokenStorage.getTokens();
+    return tokens?.refreshToken;
+  }
+
+  static getCurrentUser(): UserResponse | null {
+    return UserStorage.getUser();
   }
 }
-export type { AuthResponse };
+export type { AuthResponse, UserResponse };
