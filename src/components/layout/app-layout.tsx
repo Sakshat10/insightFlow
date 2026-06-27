@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useCurrentUser } from "@/features/auth";
+import { AuthStorage } from "@/lib/auth/auth-storage";
 import { Sidebar } from "./sidebar";
 import { BarChart3 } from "lucide-react";
 
@@ -12,29 +12,16 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
-  const { data: user, isLoading, isError } = useCurrentUser();
+  const authenticated = typeof window !== "undefined" ? AuthStorage.isAuthenticated() : false;
 
   useEffect(() => {
-    // If loading completes and no user is resolved or an error occurs, redirect to login
-    if (!isLoading && (isError || !user)) {
+    if (!authenticated) {
       router.push("/login");
     }
-  }, [user, isLoading, isError, router]);
+  }, [authenticated, router]);
 
-  // Loading screen matching dashboard design system
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <BarChart3 className="h-8 w-8 text-primary animate-pulse" />
-          <span className="text-sm text-muted-foreground font-medium">Checking session...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // If loading has ended and user is unauthenticated, render empty state while redirecting
-  if (isError || !user) {
+  // Render nothing if unauthenticated, to avoid layout shift before redirect
+  if (!authenticated) {
     return null;
   }
 
