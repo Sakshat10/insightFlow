@@ -15,7 +15,7 @@ export class AuthService {
     if (!result?.data) {
       throw new Error(result?.message || "Login failed");
     }
-    AuthStorage.saveAuth(result.data);
+    AuthStorage.login(result.data);
     return result.data;
   }
 
@@ -24,16 +24,22 @@ export class AuthService {
     if (!result?.data) {
       throw new Error(result?.message || "Registration failed");
     }
-    AuthStorage.saveAuth(result.data);
+    AuthStorage.login(result.data);
     return result.data;
   }
 
   static async logout(): Promise<void> {
-    const result = await AuthRepository.logout();
-    if (result?.success === false) {
-      throw new Error(result?.message || "Logout failed");
+    try {
+      const result = await AuthRepository.logout();
+      if (result?.success === false) {
+        throw new Error(result?.message || "Logout failed");
+      }
+    } catch (error) {
+      console.error("Logout API failed, forcing local storage clear:", error);
+      throw error;
+    } finally {
+      AuthStorage.logout();
     }
-    AuthStorage.removeAuth();
   }
 
   static async getCurrentUser(): Promise<UserResponse> {
