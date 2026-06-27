@@ -11,8 +11,7 @@ export function useCurrentUser() {
   return useQuery<UserResponse | null, Error>({
     queryKey: queryKeys.auth.currentUser,
     queryFn: () => {
-      const auth = AuthStorage.getAuth();
-      return auth?.user || null;
+      return AuthStorage.getCurrentUser();
     },
     staleTime: Infinity,
   });
