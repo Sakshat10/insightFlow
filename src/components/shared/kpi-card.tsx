@@ -30,17 +30,17 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card px-4 py-3.5",
+        "rounded-xl border border-border/70 bg-card p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:border-border/100",
         className
       )}
     >
-      <p className="text-[12px] font-medium text-muted-foreground mb-1.5">
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
         {label}
       </p>
-      <div className="flex items-end gap-2">
+      <div className="flex items-baseline justify-between">
         <span
           className={cn(
-            "text-[22px] font-semibold tracking-tight text-foreground tabular-nums leading-none",
+            "text-2xl font-bold tracking-tight text-foreground tabular-nums",
             valueClassName
           )}
         >
@@ -51,21 +51,21 @@ export function KpiCard({
         {change !== undefined && (
           <div
             className={cn(
-              "flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold mb-0.5",
-              isPositive && "bg-emerald-50 text-emerald-700",
-              isNegative && "bg-red-50 text-red-600",
-              !isPositive && !isNegative && "bg-muted text-muted-foreground"
+              "flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-semibold",
+              isPositive && "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+              isNegative && "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400",
+              !isPositive && !isNegative && "bg-muted/50 border-border text-muted-foreground"
             )}
           >
             {isPositive && <TrendingUp className="h-3 w-3" />}
             {isNegative && <TrendingDown className="h-3 w-3" />}
             {!isPositive && !isNegative && <Minus className="h-3 w-3" />}
-            {Math.abs(change)}%
+            <span>{Math.abs(change)}%</span>
           </div>
         )}
       </div>
       {description && (
-        <p className="mt-1 text-[11px] text-muted-foreground">{description}</p>
+        <p className="mt-2 text-[11px] text-muted-foreground/80 leading-normal">{description}</p>
       )}
     </div>
   );
