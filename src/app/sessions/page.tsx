@@ -7,7 +7,9 @@ import { CardSection } from "@/components/shared/section-header";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { DateRangeSelector } from "@/components/shared/date-range-selector";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { sessionsData } from "@/lib/data";
+import { useActiveProject } from "@/providers/ActiveProjectProvider";
+import { useSessionList } from "@/features/analytics";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
