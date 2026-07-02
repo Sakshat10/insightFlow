@@ -31,6 +31,8 @@ import {
 import { useCurrentUser, useLogout } from "@/features/auth";
 import { useRouter } from "next/navigation";
 
+import { useActiveProject } from "@/providers/ActiveProjectProvider";
+
 const navItems = [
   {
     section: "Overview",
@@ -73,6 +75,7 @@ export function Sidebar() {
   const router = useRouter();
   const { data: user } = useCurrentUser();
   const logoutMutation = useLogout();
+  const { activeProject, projects, setActiveProjectId, isLoading: projectsLoading } = useActiveProject();
 
   const handleSignOut = () => {
     if (logoutMutation.isPending) return;
@@ -102,31 +105,41 @@ export function Sidebar() {
       {/* Project switcher */}
       <div className="border-b border-border px-3 py-2.5">
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-sidebar-accent transition-colors outline-none">
-            <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded bg-blue-600 text-[10px] font-bold text-white">
-              AC
+          <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-sidebar-accent transition-colors outline-none" disabled={projectsLoading}>
+            <div
+              className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-[10px] font-bold text-white"
+              style={{ backgroundColor: activeProject?.color || "#4F81F7" }}
+            >
+              {activeProject ? activeProject.name.substring(0, 2).toUpperCase() : "AC"}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] font-medium text-foreground leading-tight">
-                Acme Corporation
+                {activeProject ? activeProject.name : "Loading..."}
               </p>
               <p className="truncate text-[11px] text-muted-foreground leading-tight">
-                acme.com
+                {activeProject ? activeProject.domain : "..."}
               </p>
             </div>
             <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[200px]">
-            <DropdownMenuItem className="text-[13px]">
-              <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-[9px] font-bold text-white mr-2">AC</div>
-              Acme Corporation
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-[13px]">
-              <div className="flex h-5 w-5 items-center justify-center rounded bg-emerald-600 text-[9px] font-bold text-white mr-2">AM</div>
-              Acme Mobile
-            </DropdownMenuItem>
+            {projects.map((proj) => (
+              <DropdownMenuItem
+                key={proj.id}
+                onClick={() => setActiveProjectId(proj.id)}
+                className="text-[13px] cursor-pointer"
+              >
+                <div
+                  className="flex h-5 w-5 items-center justify-center rounded text-[9px] font-bold text-white mr-2"
+                  style={{ backgroundColor: proj.color }}
+                >
+                  {proj.name.substring(0, 2).toUpperCase()}
+                </div>
+                {proj.name}
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-[13px]">
+            <DropdownMenuItem className="text-[13px] cursor-pointer" onClick={() => router.push("/projects")}>
               <Plus className="mr-2 h-3.5 w-3.5" />
               New project
             </DropdownMenuItem>
