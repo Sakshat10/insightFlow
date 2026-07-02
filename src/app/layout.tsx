@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Monitor traffic, user behavior, conversions, and custom events",
 };
 
+import { ActiveProjectProvider } from "@/providers/ActiveProjectProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,9 +35,11 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-background font-sans antialiased">
         <QueryProvider>
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
+          <ActiveProjectProvider>
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+          </ActiveProjectProvider>
         </QueryProvider>
       </body>
     </html>
