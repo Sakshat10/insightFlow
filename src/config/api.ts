@@ -16,12 +16,19 @@ export const apiEndpoints = {
   dashboard: "/dashboard/metrics",
   analytics: {
     overview: "/analytics/overview",
-    pages: "/analytics/pages",
-    sources: "/analytics/sources",
+    traffic: "/analytics/traffic",
+    countries: "/analytics/countries",
+    devices: "/analytics/devices",
+    browsers: "/analytics/browsers",
+    referrers: "/analytics/referrers",
+    topPages: "/analytics/top-pages",
+    sessions: "/analytics/sessions",
+    events: "/analytics/events",
   },
   projects: {
     base: "/projects",
-    detail: (id: string) => `/projects/${id}`,
+    stats: "/projects/stats",
+    detail: (id: string | number) => `/projects/${id}`,
   },
   events: {
     base: "/events",
