@@ -641,59 +641,6 @@ export const apiKeysData = [
   },
 ];
 
-// ─────────────────────────────────────────────
-// PROJECTS
-// ─────────────────────────────────────────────
-export const projectsData = [
-  {
-    id: "proj_001",
-    name: "Acme Corporation",
-    domain: "acme.com",
-    visitors: 12481,
-    conversionRate: 4.8,
-    status: "active",
-    plan: "Growth",
-    lastActivity: "2 min ago",
-    tracking: "verified",
-    color: "#4F81F7",
-  },
-  {
-    id: "proj_002",
-    name: "Acme Mobile",
-    domain: "app.acme.com",
-    visitors: 8204,
-    conversionRate: 6.2,
-    status: "active",
-    plan: "Growth",
-    lastActivity: "5 min ago",
-    tracking: "verified",
-    color: "#64B587",
-  },
-  {
-    id: "proj_003",
-    name: "Acme Blog",
-    domain: "blog.acme.com",
-    visitors: 3847,
-    conversionRate: 2.1,
-    status: "active",
-    plan: "Starter",
-    lastActivity: "18 min ago",
-    tracking: "verified",
-    color: "#F59E0B",
-  },
-  {
-    id: "proj_004",
-    name: "Landing Page Experiment",
-    domain: "lp.acme.com",
-    visitors: 0,
-    conversionRate: 0,
-    status: "inactive",
-    plan: "Free",
-    lastActivity: "Never",
-    tracking: "pending",
-    color: "#A78BFA",
-  },
-];
 
 // ─────────────────────────────────────────────
 // TEAM MEMBERS (Settings)
