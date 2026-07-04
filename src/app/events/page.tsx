@@ -1,6 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { AppLayout } from "@/components/layout/app-layout";
+import { Header } from "@/components/layout/header";
+import { CardSection } from "@/components/shared/section-header";
+import { KpiCard } from "@/components/shared/kpi-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Plus, Zap } from "lucide-react";
+import { useActiveProject } from "@/providers/ActiveProjectProvider";
+import { useEvents, useEvent, useEventTimeline } from "@/features/events";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import {
   BarChart,
   Bar,
@@ -9,31 +25,15 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
-import { AppLayout } from "@/components/layout/app-layout";
-import { Header } from "@/components/layout/header";
-import { CardSection } from "@/components/shared/section-header";
-import { KpiCard } from "@/components/shared/kpi-card";
-import { DateRangeSelector } from "@/components/shared/date-range-selector";
-import { eventTimeline } from "@/lib/data";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  Search,
-  TrendingUp,
-  TrendingDown,
-  Plus,
-  Zap,
-} from "lucide-react";
-import { useActiveProject } from "@/providers/ActiveProjectProvider";
-import { useEvents, useEvent } from "@/features/events";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  DateRangePicker,
+  DateRangeSelection,
+  formatApiDate,
+  getPresetLabel,
+  getPresetRange,
+} from "@/components/shared/date-range-picker";
 
 const categoryColors: Record<string, string> = {
   revenue: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -49,11 +49,28 @@ const impactColors: Record<string, string> = {
   Low: "text-gray-500 bg-gray-100",
 };
 
-interface TooltipEntry {
-  dataKey?: string | number;
+const PALETTE = [
+  "#4F81F7", // blue
+  "#64B587", // green
+  "#F59E0B", // amber
+  "#A78BFA", // violet
+  "#FB923C", // orange
+  "#2DD4BF", // teal
+  "#F43F5E", // rose
+  "#06B6D4", // cyan
+  "#EC4899", // pink
+  "#10B981", // emerald
+];
+
+function getEventColor(index: number): string {
+  return PALETTE[index % PALETTE.length];
+}
+
+interface CustomTooltipEntry {
   name?: string;
   value?: number | string;
   color?: string;
+  dataKey?: string | number;
 }
 
 const CustomTooltip = ({
@@ -62,25 +79,74 @@ const CustomTooltip = ({
   label,
 }: {
   active?: boolean;
-  payload?: TooltipEntry[];
+  payload?: CustomTooltipEntry[];
   label?: string;
 }) => {
   if (active && payload && payload.length) {
+    const total = payload.reduce((sum: number, entry) => sum + (Number(entry.value) || 0), 0);
+    
     return (
-      <div className="rounded-lg border border-border bg-card px-3 py-2 shadow-lg">
-        <p className="text-[11px] font-medium text-muted-foreground mb-1.5">{label}</p>
-        {payload.map((entry) => (
-          <div key={entry.dataKey} className="flex items-center gap-2 text-[12px]">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="text-muted-foreground capitalize">{entry.dataKey}:</span>
-            <span className="font-semibold tabular-nums">{entry.value?.toLocaleString()}</span>
-          </div>
-        ))}
+      <div className="rounded-lg border border-border bg-card px-4 py-3 shadow-lg min-w-[200px]">
+        <p className="text-[12px] font-semibold text-foreground mb-2">{label}</p>
+        <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+          {payload.map((entry) => {
+            const displayName = entry.name
+              ? String(entry.name).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+              : "Unknown";
+            return (
+              <div key={entry.dataKey} className="flex items-center justify-between gap-4 text-[12px]">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+                  <span className="text-muted-foreground truncate max-w-[120px]">{displayName}</span>
+                </div>
+                <span className="font-semibold tabular-nums text-foreground">
+                  {entry.value?.toLocaleString()}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-2.5 pt-2 border-t border-border flex items-center justify-between text-[12px] font-bold text-foreground">
+          <span>Total Events</span>
+          <span className="tabular-nums">{total.toLocaleString()}</span>
+        </div>
       </div>
     );
   }
   return null;
 };
+
+const SkeletonChart = () => (
+  <div className="flex flex-col items-center justify-center h-[180px] w-full bg-muted/5 border border-border rounded-lg relative overflow-hidden">
+    <div className="absolute inset-0 flex items-end justify-between px-8 pb-4 gap-4 animate-pulse">
+      <div className="h-16 w-8 bg-muted rounded-t" />
+      <div className="h-24 w-8 bg-muted rounded-t" />
+      <div className="h-32 w-8 bg-muted rounded-t" />
+      <div className="h-12 w-8 bg-muted rounded-t" />
+      <div className="h-28 w-8 bg-muted rounded-t" />
+      <div className="h-20 w-8 bg-muted rounded-t" />
+      <div className="h-36 w-8 bg-muted rounded-t" />
+    </div>
+    <div className="text-[12px] font-medium text-muted-foreground/60 z-10">Loading timeline activity...</div>
+  </div>
+);
+
+const ErrorChart = ({ error, onRetry }: { error: Error | null; onRetry: () => void }) => (
+  <div className="flex flex-col items-center justify-center h-[180px] bg-red-50/30 border border-dashed border-red-200 rounded-lg p-4">
+    <span className="text-[13px] font-medium text-red-800">Failed to load Event Activity timeline</span>
+    <span className="text-[11px] text-red-600/80 mt-1 mb-3">{error?.message || "Check your network connection"}</span>
+    <Button size="sm" variant="outline" onClick={onRetry} className="h-8 text-red-800 border-red-200 hover:bg-red-50">
+      Retry
+    </Button>
+  </div>
+);
+
+const EmptyChart = () => (
+  <div className="flex flex-col items-center justify-center h-[180px] bg-muted/10 border border-dashed border-border rounded-lg">
+    <span className="text-[13px] font-medium text-muted-foreground">No events during selected period</span>
+    <span className="text-[11px] text-muted-foreground/80 mt-1">Timeline is empty for the current date range</span>
+  </div>
+);
 
 const SkeletonRow = () => (
   <tr className="border-b border-border/50">
@@ -118,7 +184,14 @@ export default function EventsPage() {
   const { activeProjectId } = useActiveProject();
   
   const [search, setSearch] = useState("");
-  const [dateRange, setDateRange] = useState("30d");
+  const [dateRangeSelection, setDateRangeSelection] = useState<DateRangeSelection>(() => {
+    const { from, to } = getPresetRange("7d");
+    return {
+      from,
+      to,
+      label: getPresetLabel("7d"),
+    };
+  });
   const [activeCategory, setActiveCategory] = useState("all");
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
 
@@ -152,6 +225,17 @@ export default function EventsPage() {
     refetch: refetchDetail,
   } = useEvent(selectedEventId || 0);
 
+  // Query event timeline
+  const from = formatApiDate(dateRangeSelection.from);
+  const to = formatApiDate(dateRangeSelection.to);
+  const {
+    data: timelineData,
+    isLoading: isTimelineLoading,
+    isError: isTimelineError,
+    error: timelineError,
+    refetch: refetchTimeline,
+  } = useEventTimeline(activeProjectId || 0, from, to);
+
   const eventsList = eventsDataResponse?.content || [];
   const totalElements = eventsDataResponse?.totalElements || 0;
   const totalPages = eventsDataResponse?.totalPages || 0;
@@ -177,7 +261,6 @@ export default function EventsPage() {
         description={`${totalElements} custom events tracked`}
         actions={
           <div className="flex items-center gap-2">
-            <DateRangeSelector value={dateRange} onChange={setDateRange} />
             <Button size="sm" className="h-8 gap-1.5 text-[12px]">
               <Plus className="h-3.5 w-3.5" />
               New Event
@@ -193,19 +276,15 @@ export default function EventsPage() {
             <KpiCard
               label="Total Events"
               value={totalEvents}
-              change={9.4}
-              direction="up"
             />
             <KpiCard
               label="Unique Users (Page)"
               value={totalUnique}
-              change={7.2}
-              direction="up"
             />
             <KpiCard
               label="Tracked Events (Page)"
-              value={eventsList.length}
-              description="Events on current page"
+              value={new Set(eventsList.map((e) => e.name)).size}
+              description="Unique event definitions on page"
             />
             <KpiCard
               label="Critical Events (Page)"
@@ -217,42 +296,60 @@ export default function EventsPage() {
           {/* Event Timeline Chart */}
           <CardSection
             title="Event Activity"
-            description="Top events — daily volume"
+            description="Daily volume timeline"
+            actions={
+              <DateRangePicker
+                value={dateRangeSelection}
+                onChange={setDateRangeSelection}
+              />
+            }
           >
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={eventTimeline} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="signup" fill="#4F81F7" stackId="a" maxBarSize={28} />
-                <Bar dataKey="purchase" fill="#64B587" stackId="a" maxBarSize={28} />
-                <Bar dataKey="checkout_started" fill="#F59E0B" stackId="a" maxBarSize={28} />
-                <Bar dataKey="contact_form" fill="#A78BFA" stackId="a" radius={[3, 3, 0, 0]} maxBarSize={28} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="flex items-center gap-4 mt-2 border-t border-border pt-3">
-              {[
-                { label: "signup", color: "#4F81F7" },
-                { label: "purchase", color: "#64B587" },
-                { label: "checkout_started", color: "#F59E0B" },
-                { label: "contact_form", color: "#A78BFA" },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-                  <span className="text-[11px] text-muted-foreground font-mono">{item.label}</span>
-                </div>
-              ))}
-            </div>
+            {isTimelineLoading ? (
+              <SkeletonChart />
+            ) : isTimelineError ? (
+              <ErrorChart error={timelineError} onRetry={refetchTimeline} />
+            ) : !timelineData || timelineData.chartData.length === 0 ? (
+              <EmptyChart />
+            ) : (
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={timelineData.chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36} 
+                    iconType="circle" 
+                    iconSize={8}
+                    formatter={(value) => (
+                      <span className="text-[11px] text-muted-foreground font-mono">
+                        {String(value).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </span>
+                    )}
+                  />
+                  {timelineData.eventNames.map((name, index) => (
+                    <Bar
+                      key={name}
+                      dataKey={name}
+                      stackId="a"
+                      fill={getEventColor(index)}
+                      maxBarSize={28}
+                      // Rounded corners for the topmost bar in stack can be added or standard flat
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardSection>
 
           {/* Filter row */}
@@ -385,23 +482,7 @@ export default function EventsPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right hidden md:table-cell">
-                          <div className="flex items-center justify-end gap-1">
-                            {event.trend > 0 ? (
-                              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                            ) : event.trend < 0 ? (
-                              <TrendingDown className="h-3.5 w-3.5 text-red-500" />
-                            ) : (
-                              <span className="h-1.5 w-1.5 rounded-full bg-gray-300" />
-                            )}
-                            <span
-                              className={`text-[12px] font-medium tabular-nums ${
-                                event.trend > 0 ? "text-emerald-600" : event.trend < 0 ? "text-red-600" : "text-muted-foreground"
-                              }`}
-                            >
-                              {event.trend > 0 ? "+" : ""}
-                              {event.trend}%
-                            </span>
-                          </div>
+                          <span className="text-[13px] text-muted-foreground">--</span>
                         </td>
                         <td className="px-4 py-3 text-right hidden xl:table-cell">
                           <span className="text-[12px] text-muted-foreground">{event.lastSeen}</span>
