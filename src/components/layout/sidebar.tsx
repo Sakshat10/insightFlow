@@ -32,6 +32,7 @@ import { useCurrentUser, useLogout } from "@/features/auth";
 import { useRouter } from "next/navigation";
 
 import { useActiveProject } from "@/providers/ActiveProjectProvider";
+import { useEvents } from "@/features/events";
 
 const navItems = [
   {
@@ -76,6 +77,11 @@ export function Sidebar() {
   const { data: user } = useCurrentUser();
   const logoutMutation = useLogout();
   const { activeProject, projects, setActiveProjectId, isLoading: projectsLoading } = useActiveProject();
+  const { data: eventsData } = useEvents({
+    projectId: activeProject?.id || 0,
+    page: 0,
+    size: 1,
+  });
 
   const handleSignOut = () => {
     if (logoutMutation.isPending) return;
@@ -160,6 +166,12 @@ export function Sidebar() {
                 const isActive =
                   pathname === item.href ||
                   (item.href !== "/dashboard" && pathname.startsWith(item.href));
+                const badgeValue =
+                  item.href === "/projects"
+                    ? projects.length.toString()
+                    : item.href === "/events"
+                    ? (eventsData?.totalElements !== undefined ? eventsData.totalElements.toString() : item.badge)
+                    : item.badge;
                 return (
                   <li key={item.href}>
                     <Link
@@ -179,9 +191,9 @@ export function Sidebar() {
                         strokeWidth={isActive ? 2.5 : 2}
                       />
                       <span className="flex-1">{item.label}</span>
-                      {item.badge && (
+                      {badgeValue && (
                         <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground tabular-nums">
-                          {item.badge}
+                          {badgeValue}
                         </span>
                       )}
                     </Link>
