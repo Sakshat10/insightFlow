@@ -4,20 +4,16 @@ import { useState } from "react";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Header } from "@/components/layout/header";
 import { CardSection } from "@/components/shared/section-header";
-import { KpiCard } from "@/components/shared/kpi-card";
 import { DateRangeSelector } from "@/components/shared/date-range-selector";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { useActiveProject } from "@/providers/ActiveProjectProvider";
-import { useSessionList } from "@/features/analytics";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { sessionsData } from "@/lib/data";
+import { FrontSession } from "@/services/analytics.service";
 import {
   Search,
   Monitor,
   Smartphone,
   Tablet,
-  Globe,
   ArrowRight,
   Clock,
   MousePointer,
@@ -35,23 +31,23 @@ export default function SessionsPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState("30d");
 
-  const filtered = sessionsData.filter((s) => {
+  const filtered = (sessionsData as FrontSession[]).filter((s: FrontSession) => {
     if (!search) return true;
     return (
       s.user.toLowerCase().includes(search.toLowerCase()) ||
-      s.email?.toLowerCase().includes(search.toLowerCase()) ||
+      (s.email && s.email.toLowerCase().includes(search.toLowerCase())) ||
       s.id.toLowerCase().includes(search.toLowerCase())
     );
   });
 
   const selectedSession = selected
-    ? sessionsData.find((s) => s.id === selected)
+    ? (sessionsData as FrontSession[]).find((s: FrontSession) => s.id === selected)
     : null;
 
   const totalSessions = sessionsData.length;
   const avgDuration = "4m 31s";
-  const converted = sessionsData.filter((s) => s.status === "converted").length;
-  const bounced = sessionsData.filter((s) => s.status === "bounced").length;
+  const converted = (sessionsData as FrontSession[]).filter((s: FrontSession) => s.status === "converted").length;
+  const bounced = (sessionsData as FrontSession[]).filter((s: FrontSession) => s.status === "bounced").length;
 
   return (
     <AppLayout>
@@ -127,7 +123,7 @@ export default function SessionsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((session) => (
+                {filtered.map((session: FrontSession) => (
                   <tr
                     key={session.id}
                     onClick={() => setSelected(selected === session.id ? null : session.id)}
@@ -142,7 +138,7 @@ export default function SessionsPage() {
                       <div className="flex items-center gap-2">
                         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted flex-shrink-0">
                           <span className="text-[10px] font-semibold text-muted-foreground">
-                            {session.user === "Anonymous" ? "?" : session.user.split(" ").map((n) => n[0]).join("")}
+                            {session.user === "Anonymous" ? "?" : session.user.split(" ").map((n: string) => n[0]).join("")}
                           </span>
                         </div>
                         <div className="min-w-0">
@@ -223,7 +219,7 @@ export default function SessionsPage() {
               {/* User Journey */}
               <CardSection title="User Journey" description="Pages visited in order">
                 <div className="space-y-2">
-                  {selectedSession.journey.map((page, i) => (
+                  {selectedSession.journey.map((page: string, i: number) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-border bg-background text-[10px] font-semibold text-muted-foreground">
                         {i + 1}
