@@ -5,8 +5,25 @@ import { apiEndpoints } from "@/config/api";
 type ApiResponseOverviewAnalyticsResponse = components["schemas"]["ApiResponseOverviewAnalyticsResponse"];
 type ApiResponseTrafficResponse = components["schemas"]["ApiResponseTrafficResponse"];
 type ApiResponseListStatEntry = components["schemas"]["ApiResponseListStatEntry"];
+type ApiResponseEventTimelineResponse = components["schemas"]["ApiResponseEventTimelineResponse"];
 
 export class AnalyticsRepository {
+  static async getEventTimeline(params: {
+    projectId: number;
+    from: string;
+    to: string;
+  }): Promise<ApiResponseEventTimelineResponse> {
+    try {
+      const response = await apiClient.get<ApiResponseEventTimelineResponse>(
+        apiEndpoints.analytics.eventTimeline,
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
   static async getOverview(projectId: number): Promise<ApiResponseOverviewAnalyticsResponse> {
     try {
       const response = await apiClient.get<ApiResponseOverviewAnalyticsResponse>(apiEndpoints.analytics.overview, {
