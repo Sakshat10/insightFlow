@@ -24,6 +24,7 @@ export const apiEndpoints = {
     topPages: "/analytics/top-pages",
     sessions: "/analytics/sessions",
     events: "/analytics/events",
+    eventTimeline: "/analytics/event-timeline",
   },
   projects: {
     base: "/projects",
