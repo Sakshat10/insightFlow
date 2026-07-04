@@ -487,6 +487,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/analytics/event-timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get daily custom event activity timeline */
+        get: operations["getEventTimeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/analytics/devices": {
         parameters: {
             query?: never;
@@ -627,7 +644,8 @@ export interface components {
         };
         TrackPageViewRequest: {
             trackingKey: string;
-            sessionId?: string;
+            /** Format: int64 */
+            sessionId?: number;
             url?: string;
             title?: string;
             referrer?: string;
@@ -644,7 +662,7 @@ export interface components {
             id?: number;
             /** Format: int32 */
             projectId?: number;
-            /** Format: int32 */
+            /** Format: int64 */
             sessionId?: number;
             url?: string;
             title?: string;
@@ -653,14 +671,15 @@ export interface components {
             createdAt?: string;
         };
         TrackEventRequest: {
-            trackingKey: string;
-            sessionId?: string;
+            /** Format: int64 */
+            sessionId?: number;
             eventName: string;
             eventCategory?: string;
             eventLabel?: string;
             eventValue?: string;
             url?: string;
             properties?: string;
+            isConversion?: boolean;
         };
         ApiResponseEventResponse: {
             success?: boolean;
@@ -672,21 +691,21 @@ export interface components {
         EventResponse: {
             /** Format: int64 */
             id?: number;
-            /** Format: int32 */
-            projectId?: number;
-            trackingKey?: string;
-            sessionId?: string;
+            /** Format: int64 */
+            sessionId?: number;
             eventName?: string;
             eventCategory?: string;
             eventLabel?: string;
             eventValue?: string;
             url?: string;
-            country?: string;
-            deviceType?: string;
-            browser?: string;
             properties?: string;
+            isConversion?: boolean;
+            country?: string;
+            browser?: string;
             /** Format: date-time */
             createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
         };
         CreateSessionRequest: {
             trackingKey: string;
@@ -735,7 +754,8 @@ export interface components {
         };
         CreatePageViewRequest: {
             trackingKey: string;
-            sessionId?: string;
+            /** Format: int64 */
+            sessionId?: number;
             url?: string;
             title?: string;
             referrer?: string;
@@ -746,19 +766,15 @@ export interface components {
             browser?: string;
         };
         CreateEventRequest: {
-            trackingKey: string;
-            sessionId?: string;
+            /** Format: int64 */
+            sessionId?: number;
             eventName: string;
             eventCategory?: string;
             eventLabel?: string;
             eventValue?: string;
             url?: string;
-            ipAddress?: string;
-            userAgent?: string;
-            country?: string;
-            deviceType?: string;
-            browser?: string;
             properties?: string;
+            isConversion?: boolean;
         };
         RegisterRequest: {
             username: string;
@@ -944,6 +960,26 @@ export interface components {
             pageViewsToday?: number;
             /** Format: int64 */
             sessionsToday?: number;
+        };
+        ApiResponseEventTimelineResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["EventTimelineResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        EventTimelineDay: {
+            /** Format: date */
+            date?: string;
+            events?: components["schemas"]["EventTimelineItem"][];
+        };
+        EventTimelineItem: {
+            eventName?: string;
+            /** Format: int64 */
+            count?: number;
+        };
+        EventTimelineResponse: {
+            timeline?: components["schemas"]["EventTimelineDay"][];
         };
     };
     responses: never;
@@ -1785,6 +1821,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseListStatEntry"];
+                };
+            };
+        };
+    };
+    getEventTimeline: {
+        parameters: {
+            query: {
+                projectId: number;
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseEventTimelineResponse"];
                 };
             };
         };
