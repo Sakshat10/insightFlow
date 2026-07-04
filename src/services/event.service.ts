@@ -9,7 +9,7 @@ export interface FrontEvent {
   displayName: string;
   count: number;
   uniqueUsers: number;
-  conversionImpact: "Critical" | "High" | "Medium" | "Low";
+  conversionImpact: "Critical" | "High" | "Medium" | "Low" | "--";
   trend: number;
   lastSeen: string;
   category: string;
@@ -42,7 +42,7 @@ export class EventService {
       
     // Determine conversionImpact and category from eventName or category
     let category = e.eventCategory || "engagement";
-    let conversionImpact: "Critical" | "High" | "Medium" | "Low" = "Medium";
+    let conversionImpact: "Critical" | "High" | "Medium" | "Low" | "--" = "--";
     
     if (name === "purchase" || name === "trial_activated") {
       conversionImpact = "Critical";
@@ -96,10 +96,10 @@ export class EventService {
       lastSeen,
       category,
       description: e.eventLabel || `Event ${name} tracked on path ${e.url || ""}`,
-      sessionId: e.sessionId,
+      sessionId: e.sessionId ? String(e.sessionId) : undefined,
       url: e.url,
       country: e.country,
-      deviceType: e.deviceType,
+      deviceType: "--",
       browser: e.browser,
       properties: e.properties,
     };
