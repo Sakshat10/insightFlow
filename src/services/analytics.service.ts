@@ -1,10 +1,7 @@
 import { AnalyticsRepository } from "@/repositories/analytics.repository";
 import { components } from "@/generated/openapi";
 
-type OverviewAnalyticsResponse = components["schemas"]["OverviewAnalyticsResponse"];
-type TrafficDataPoint = components["schemas"]["TrafficDataPoint"];
 type StatEntry = components["schemas"]["StatEntry"];
-type SessionResponse = components["schemas"]["SessionResponse"];
 
 export interface FrontOverview {
   totalPageViews: number;
@@ -311,8 +308,8 @@ export class AnalyticsService {
 
       return {
         id: s.sessionId || `session_${s.id}`,
-        userId: s.userId ? String(s.userId) : null,
-        user: s.userId ? `User #${s.userId}` : "Anonymous",
+        userId: null,
+        user: "Anonymous",
         email: null,
         country: s.country || "United States",
         device: s.deviceType || "Desktop",
