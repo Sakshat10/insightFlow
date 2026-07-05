@@ -6,6 +6,11 @@ type ApiResponseOverviewAnalyticsResponse = components["schemas"]["ApiResponseOv
 type ApiResponseTrafficResponse = components["schemas"]["ApiResponseTrafficResponse"];
 type ApiResponseListStatEntry = components["schemas"]["ApiResponseListStatEntry"];
 type ApiResponseEventTimelineResponse = components["schemas"]["ApiResponseEventTimelineResponse"];
+type ApiResponseFunnelAnalyticsResponse = components["schemas"]["ApiResponseFunnelAnalyticsResponse"];
+type CreateFunnelRequest = components["schemas"]["CreateFunnelRequest"];
+type UpdateFunnelRequest = components["schemas"]["UpdateFunnelRequest"];
+type ApiResponseFunnelResponse = components["schemas"]["ApiResponseFunnelResponse"];
+type ApiResponseListFunnelResponse = components["schemas"]["ApiResponseListFunnelResponse"];
 
 export class AnalyticsRepository {
   static async getEventTimeline(params: {
@@ -139,6 +144,99 @@ export class AnalyticsRepository {
       const response = await apiClient.get<components["schemas"]["ApiResponsePagedResponseEventResponse"]>(apiEndpoints.events.base, {
         params: { projectId, page, size },
       });
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async getFunnel(params: {
+    projectId: number;
+    from: string;
+    to: string;
+    steps: string[];
+  }): Promise<ApiResponseFunnelAnalyticsResponse> {
+    try {
+      const response = await apiClient.get<ApiResponseFunnelAnalyticsResponse>(
+        apiEndpoints.analytics.funnel,
+        {
+          params,
+          paramsSerializer: {
+            serialize: (p) => {
+              const parts: string[] = [];
+              for (const [key, value] of Object.entries(p)) {
+                if (value === undefined || value === null) continue;
+                if (Array.isArray(value)) {
+                  for (const val of value) {
+                    parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(val)}`);
+                  }
+                } else {
+                  parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+                }
+              }
+              return parts.join("&");
+            },
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async getFunnels(projectId: number): Promise<ApiResponseListFunnelResponse> {
+    try {
+      const response = await apiClient.get<ApiResponseListFunnelResponse>(
+        apiEndpoints.funnels.base,
+        { params: { projectId } }
+      );
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async getFunnelById(id: number): Promise<ApiResponseFunnelResponse> {
+    try {
+      const response = await apiClient.get<ApiResponseFunnelResponse>(
+        apiEndpoints.funnels.detail(id)
+      );
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async createFunnel(payload: CreateFunnelRequest): Promise<ApiResponseFunnelResponse> {
+    try {
+      const response = await apiClient.post<ApiResponseFunnelResponse>(
+        apiEndpoints.funnels.base,
+        payload
+      );
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async updateFunnel(id: number, payload: UpdateFunnelRequest): Promise<ApiResponseFunnelResponse> {
+    try {
+      const response = await apiClient.put<ApiResponseFunnelResponse>(
+        apiEndpoints.funnels.detail(id),
+        payload
+      );
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async deleteFunnel(id: number): Promise<ApiResponseFunnelResponse> {
+    try {
+      const response = await apiClient.delete<ApiResponseFunnelResponse>(
+        apiEndpoints.funnels.detail(id)
+      );
       return response.data;
     } catch (error) {
       handleApiError(error);
