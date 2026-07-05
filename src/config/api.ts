@@ -25,6 +25,7 @@ export const apiEndpoints = {
     sessions: "/analytics/sessions",
     events: "/analytics/events",
     eventTimeline: "/analytics/event-timeline",
+    funnel: "/analytics/funnel",
   },
   projects: {
     base: "/projects",
@@ -41,7 +42,7 @@ export const apiEndpoints = {
   },
   funnels: {
     base: "/funnels",
-    detail: (id: string) => `/funnels/${id}`,
+    detail: (id: string | number) => `/funnels/${id}`,
   },
   reports: {
     base: "/reports",
