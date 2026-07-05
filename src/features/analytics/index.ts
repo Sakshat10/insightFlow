@@ -9,3 +9,12 @@ export { useSessionAnalytics } from "./hooks/useSessionAnalytics";
 export { useEventAnalytics } from "./hooks/useEventAnalytics";
 export { useSessionList } from "./hooks/useSessionList";
 export { useEventList } from "./hooks/useEventList";
+export { useFunnelAnalytics } from "./hooks/useFunnelAnalytics";
+export { FunnelBuilder } from "./components/funnel-builder";
+export {
+  useSavedFunnels,
+  useSavedFunnelDetail,
+  useCreateFunnel,
+  useUpdateFunnel,
+  useDeleteFunnel,
+} from "./hooks/useSavedFunnels";
