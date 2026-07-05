@@ -99,7 +99,7 @@ export class EventService {
       sessionId: e.sessionId ? String(e.sessionId) : undefined,
       url: e.url,
       country: e.country,
-      deviceType: "--",
+      deviceType: (e as any).deviceType || "--",
       browser: e.browser,
       properties: e.properties,
     };
