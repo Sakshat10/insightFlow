@@ -57,12 +57,26 @@ export const ANALYTICS_QUERY_KEYS = {
   topPages: (projectId: number, limit?: number) => [...ANALYTICS_QUERY_KEYS.all, "topPages", projectId, limit] as const,
   sessions: (projectId: number) => [...ANALYTICS_QUERY_KEYS.all, "sessions", projectId] as const,
   events: (projectId: number, limit?: number) => [...ANALYTICS_QUERY_KEYS.all, "events", projectId, limit] as const,
+  funnel: (projectId: number, from: string, to: string, steps: string[]) =>
+    [...ANALYTICS_QUERY_KEYS.all, "funnel", projectId, from, to, steps] as const,
 } as const;
 
 export const EVENT_QUERY_KEYS = {
   all: ["events"] as const,
   lists: (params?: any) => [...EVENT_QUERY_KEYS.all, "list", params] as const,
   detail: (id: number) => [...EVENT_QUERY_KEYS.all, "detail", id] as const,
+} as const;
+
+export const SESSION_QUERY_KEYS = {
+  all: ["sessions"] as const,
+  lists: (params?: unknown) => [...SESSION_QUERY_KEYS.all, "list", params] as const,
+  detail: (id: number) => [...SESSION_QUERY_KEYS.all, "detail", id] as const,
+} as const;
+
+export const SAVED_FUNNEL_QUERY_KEYS = {
+  all: ["saved-funnels"] as const,
+  list: (projectId: number) => [...SAVED_FUNNEL_QUERY_KEYS.all, "list", projectId] as const,
+  detail: (id: number) => [...SAVED_FUNNEL_QUERY_KEYS.all, "detail", id] as const,
 } as const;
 
 export type QueryKeys = typeof queryKeys;
