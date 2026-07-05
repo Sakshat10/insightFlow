@@ -75,6 +75,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/funnels/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get funnel by ID */
+        get: operations["getFunnelById"];
+        /** Update a funnel definition */
+        put: operations["updateFunnel"];
+        post?: never;
+        /** Delete a funnel definition */
+        delete: operations["deleteFunnel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tracking/session-start": {
         parameters: {
             query?: never;
@@ -191,6 +210,24 @@ export interface paths {
         put?: never;
         /** Record a page view */
         post: operations["createPageView"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/funnels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all funnels for a project */
+        get: operations["getFunnels"];
+        put?: never;
+        /** Create a new funnel definition */
+        post: operations["createFunnel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -470,6 +507,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/analytics/funnel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get ordered session-based funnel analytics */
+        get: operations["getFunnel"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/analytics/events": {
         parameters: {
             query?: never;
@@ -610,6 +664,47 @@ export interface components {
             /** Format: date-time */
             updatedAt?: string;
         };
+        FunnelStepRequest: {
+            /** Format: int32 */
+            stepOrder: number;
+            eventName: string;
+        };
+        UpdateFunnelRequest: {
+            name: string;
+            description?: string;
+            steps: components["schemas"]["FunnelStepRequest"][];
+        };
+        ApiResponseFunnelResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["FunnelResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        FunnelResponse: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int32 */
+            projectId?: number;
+            name?: string;
+            description?: string;
+            /** Format: int32 */
+            createdBy?: number;
+            steps?: components["schemas"]["FunnelStepResponse"][];
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        FunnelStepResponse: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int32 */
+            stepOrder?: number;
+            eventName?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
         TrackSessionStartRequest: {
             trackingKey: string;
             sessionId: string;
@@ -702,6 +797,7 @@ export interface components {
             isConversion?: boolean;
             country?: string;
             browser?: string;
+            deviceType?: string;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
@@ -764,6 +860,13 @@ export interface components {
             country?: string;
             deviceType?: string;
             browser?: string;
+        };
+        CreateFunnelRequest: {
+            /** Format: int32 */
+            projectId: number;
+            name: string;
+            description?: string;
+            steps: components["schemas"]["FunnelStepRequest"][];
         };
         CreateEventRequest: {
             /** Format: int64 */
@@ -884,6 +987,13 @@ export interface components {
             first?: boolean;
             last?: boolean;
         };
+        ApiResponseListFunnelResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["FunnelResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+        };
         ApiResponsePagedResponseEventResponse: {
             success?: boolean;
             message?: string;
@@ -960,6 +1070,39 @@ export interface components {
             pageViewsToday?: number;
             /** Format: int64 */
             sessionsToday?: number;
+        };
+        ApiResponseFunnelAnalyticsResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["FunnelAnalyticsResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        FunnelAnalyticsResponse: {
+            /** Format: int64 */
+            totalEnteredSessions?: number;
+            /** Format: int64 */
+            totalConvertedSessions?: number;
+            /** Format: double */
+            overallConversionRate?: number;
+            /** Format: int32 */
+            biggestDropOffStep?: number;
+            steps?: components["schemas"]["FunnelStepAnalyticsResponse"][];
+        };
+        FunnelStepAnalyticsResponse: {
+            /** Format: int32 */
+            step?: number;
+            eventName?: string;
+            /** Format: int64 */
+            sessions?: number;
+            /** Format: double */
+            conversionFromPrevious?: number;
+            /** Format: double */
+            conversionFromEntry?: number;
+            /** Format: int64 */
+            dropOffSessions?: number;
+            /** Format: double */
+            dropOffRate?: number;
         };
         ApiResponseEventTimelineResponse: {
             success?: boolean;
@@ -1170,6 +1313,76 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseProjectResponse"];
+                };
+            };
+        };
+    };
+    getFunnelById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseFunnelResponse"];
+                };
+            };
+        };
+    };
+    updateFunnel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateFunnelRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseFunnelResponse"];
+                };
+            };
+        };
+    };
+    deleteFunnel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseFunnelResponse"];
                 };
             };
         };
@@ -1416,6 +1629,52 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponsePageViewResponse"];
+                };
+            };
+        };
+    };
+    getFunnels: {
+        parameters: {
+            query: {
+                projectId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListFunnelResponse"];
+                };
+            };
+        };
+    };
+    createFunnel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFunnelRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseFunnelResponse"];
                 };
             };
         };
@@ -1798,6 +2057,31 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseOverviewAnalyticsResponse"];
+                };
+            };
+        };
+    };
+    getFunnel: {
+        parameters: {
+            query: {
+                projectId: number;
+                from: string;
+                to: string;
+                steps: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseFunnelAnalyticsResponse"];
                 };
             };
         };
