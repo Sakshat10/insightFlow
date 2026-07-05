@@ -2,6 +2,10 @@ import { AnalyticsRepository } from "@/repositories/analytics.repository";
 import { components } from "@/generated/openapi";
 
 type StatEntry = components["schemas"]["StatEntry"];
+type FunnelAnalyticsResponse = components["schemas"]["FunnelAnalyticsResponse"];
+type CreateFunnelRequest = components["schemas"]["CreateFunnelRequest"];
+type UpdateFunnelRequest = components["schemas"]["UpdateFunnelRequest"];
+type FunnelResponse = components["schemas"]["FunnelResponse"];
 
 export interface FrontOverview {
   totalPageViews: number;
@@ -375,5 +379,55 @@ export class AnalyticsService {
       totalElements: res?.data?.totalElements || 0,
       totalPages: res?.data?.totalPages || 0,
     };
+  }
+
+  static async getFunnel(params: {
+    projectId: number;
+    from: string;
+    to: string;
+    steps: string[];
+  }): Promise<FunnelAnalyticsResponse> {
+    const res = await AnalyticsRepository.getFunnel(params);
+    if (!res?.data) {
+      throw new Error(res?.message || "Failed to load funnel analytics");
+    }
+    return res.data;
+  }
+
+  static async getFunnels(projectId: number): Promise<FunnelResponse[]> {
+    const res = await AnalyticsRepository.getFunnels(projectId);
+    return res?.data || [];
+  }
+
+  static async getFunnelById(id: number): Promise<FunnelResponse> {
+    const res = await AnalyticsRepository.getFunnelById(id);
+    if (!res?.data) {
+      throw new Error(res?.message || `Failed to load funnel ${id}`);
+    }
+    return res.data;
+  }
+
+  static async createFunnel(payload: CreateFunnelRequest): Promise<FunnelResponse> {
+    const res = await AnalyticsRepository.createFunnel(payload);
+    if (!res?.data) {
+      throw new Error(res?.message || "Failed to create funnel");
+    }
+    return res.data;
+  }
+
+  static async updateFunnel(id: number, payload: UpdateFunnelRequest): Promise<FunnelResponse> {
+    const res = await AnalyticsRepository.updateFunnel(id, payload);
+    if (!res?.data) {
+      throw new Error(res?.message || "Failed to update funnel");
+    }
+    return res.data;
+  }
+
+  static async deleteFunnel(id: number): Promise<FunnelResponse> {
+    const res = await AnalyticsRepository.deleteFunnel(id);
+    if (!res?.data) {
+      throw new Error(res?.message || "Failed to delete funnel");
+    }
+    return res.data;
   }
 }
