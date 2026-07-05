@@ -7,7 +7,7 @@ import { CardSection } from "@/components/shared/section-header";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Zap } from "lucide-react";
+import { Search, Plus, Zap, X } from "lucide-react";
 import { useActiveProject } from "@/providers/ActiveProjectProvider";
 import { useEvents, useEvent, useEventTimeline } from "@/features/events";
 import {
@@ -530,12 +530,22 @@ export default function EventsPage() {
 
       {/* Detail Drawer */}
       <Sheet open={selectedEventId !== null} onOpenChange={(open) => !open && setSelectedEventId(null)}>
-        <SheetContent className="w-full sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>Event Details</SheetTitle>
-            <SheetDescription>
-              Full properties and context for this event instance.
-            </SheetDescription>
+        <SheetContent className="w-full sm:max-w-md" showCloseButton={false}>
+          <SheetHeader className="flex flex-row items-center justify-between border-b border-border pb-4">
+            <div className="space-y-0.5">
+              <SheetTitle>Event Details</SheetTitle>
+              <SheetDescription>
+                Full properties and context for this event instance.
+              </SheetDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground hover:text-foreground flex-shrink-0"
+              onClick={() => setSelectedEventId(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
