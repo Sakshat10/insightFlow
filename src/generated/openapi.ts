@@ -51,8 +51,26 @@ export interface paths {
         /** Update project */
         put: operations["updateProject"];
         post?: never;
-        /** Soft-delete project */
+        /** Delete project and all associated data */
         delete: operations["deleteProject"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get project settings by project ID */
+        get: operations["getProjectSettings"];
+        /** Update project settings by project ID */
+        put: operations["updateProjectSettings"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -320,7 +338,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/tracking/script/{trackingKey}": {
+    "/api-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all API keys for a project */
+        get: operations["getApiKeys"];
+        put?: never;
+        /** Create a new API key */
+        post: operations["createApiKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api-keys/{id}/rotate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rotate an API key */
+        post: operations["rotateApiKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api-keys/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke an API key */
+        post: operations["revokeApiKey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tracking/script/{apiKey}": {
         parameters: {
             query?: never;
             header?: never;
@@ -329,6 +399,23 @@ export interface paths {
         };
         /** Get the embeddable JavaScript tracking snippet for a project */
         get: operations["getTrackingScript"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tracking/script": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the embeddable JavaScript tracking snippet for a project */
+        get: operations["getTrackingScript_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -414,6 +501,40 @@ export interface paths {
         };
         /** Get current authenticated user */
         get: operations["getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api-keys/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get API key by ID */
+        get: operations["getApiKeyById"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api-keys/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get API key statistics for a project */
+        get: operations["getApiKeyStats"];
         put?: never;
         post?: never;
         delete?: never;
@@ -658,11 +779,41 @@ export interface components {
             domain?: string;
             /** Format: int32 */
             projectStatus?: number;
-            trackingKey?: string;
             /** Format: date-time */
             createdAt?: string;
             /** Format: date-time */
             updatedAt?: string;
+        };
+        ProjectSettingsRequest: {
+            projectName: string;
+            domain?: string;
+            industry?: string;
+            timezone: string;
+            pageviewTracking?: boolean;
+            sessionRecording?: boolean;
+            ipAnonymization?: boolean;
+            botFiltering?: boolean;
+            crossDomainTracking?: boolean;
+        };
+        ApiResponseProjectSettingsResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["ProjectSettingsResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        ProjectSettingsResponse: {
+            /** Format: int32 */
+            projectId?: number;
+            projectName?: string;
+            domain?: string;
+            industry?: string;
+            timezone?: string;
+            pageviewTracking?: boolean;
+            sessionRecording?: boolean;
+            ipAnonymization?: boolean;
+            botFiltering?: boolean;
+            crossDomainTracking?: boolean;
         };
         FunnelStepRequest: {
             /** Format: int32 */
@@ -706,8 +857,8 @@ export interface components {
             createdAt?: string;
         };
         TrackSessionStartRequest: {
-            trackingKey: string;
             sessionId: string;
+            visitorId: string;
             referrer?: string;
             userAgent?: string;
         };
@@ -720,10 +871,8 @@ export interface components {
         };
         TrackSessionStartResponse: {
             sessionId?: string;
-            trackingKey?: string;
         };
         TrackSessionEndRequest: {
-            trackingKey: string;
             sessionId: string;
             /** Format: int32 */
             duration?: number;
@@ -738,9 +887,7 @@ export interface components {
             timestamp?: string;
         };
         TrackPageViewRequest: {
-            trackingKey: string;
-            /** Format: int64 */
-            sessionId?: number;
+            sessionId?: string;
             url?: string;
             title?: string;
             referrer?: string;
@@ -766,8 +913,7 @@ export interface components {
             createdAt?: string;
         };
         TrackEventRequest: {
-            /** Format: int64 */
-            sessionId?: number;
+            sessionId?: string;
             eventName: string;
             eventCategory?: string;
             eventLabel?: string;
@@ -804,7 +950,8 @@ export interface components {
             updatedAt?: string;
         };
         CreateSessionRequest: {
-            trackingKey: string;
+            /** Format: int32 */
+            projectId: number;
             sessionId: string;
             ipAddress?: string;
             country?: string;
@@ -849,7 +996,6 @@ export interface components {
             domain?: string;
         };
         CreatePageViewRequest: {
-            trackingKey: string;
             /** Format: int64 */
             sessionId?: number;
             url?: string;
@@ -905,6 +1051,75 @@ export interface components {
         LoginRequest: {
             username: string;
             password: string;
+        };
+        CreateApiKeyRequest: {
+            /** Format: int32 */
+            projectId: number;
+            name: string;
+            /** @enum {string} */
+            environment: "PRODUCTION" | "STAGING" | "DEVELOPMENT";
+            permissions?: string[];
+        };
+        ApiKeyCreatedResponse: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int32 */
+            projectId?: number;
+            name?: string;
+            keyPrefix?: string;
+            apiKey?: string;
+            /** @enum {string} */
+            environment?: "PRODUCTION" | "STAGING" | "DEVELOPMENT";
+            /** @enum {string} */
+            status?: "ACTIVE" | "REVOKED";
+            permissions?: string[];
+            /** Format: date-time */
+            lastUsedAt?: string;
+            /** Format: int64 */
+            requestCount?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            /** Format: date-time */
+            revokedAt?: string;
+        };
+        ApiResponseApiKeyCreatedResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["ApiKeyCreatedResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        ApiKeyResponse: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int32 */
+            projectId?: number;
+            name?: string;
+            keyPrefix?: string;
+            /** @enum {string} */
+            environment?: "PRODUCTION" | "STAGING" | "DEVELOPMENT";
+            /** @enum {string} */
+            status?: "ACTIVE" | "REVOKED";
+            permissions?: string[];
+            /** Format: date-time */
+            lastUsedAt?: string;
+            /** Format: int64 */
+            requestCount?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            /** Format: date-time */
+            revokedAt?: string;
+        };
+        ApiResponseApiKeyResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["ApiKeyResponse"];
+            /** Format: date-time */
+            timestamp?: string;
         };
         ApiResponsePagedResponseSessionResponse: {
             success?: boolean;
@@ -1014,6 +1229,30 @@ export interface components {
             first?: boolean;
             last?: boolean;
         };
+        ApiResponseListApiKeyResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["ApiKeyResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        ApiKeyStatsResponse: {
+            /** Format: int64 */
+            totalKeys?: number;
+            /** Format: int64 */
+            activeKeys?: number;
+            /** Format: int64 */
+            revokedKeys?: number;
+            /** Format: int64 */
+            totalRequests?: number;
+        };
+        ApiResponseApiKeyStatsResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["ApiKeyStatsResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
         ApiResponseTrafficResponse: {
             success?: boolean;
             message?: string;
@@ -1103,6 +1342,27 @@ export interface components {
             dropOffSessions?: number;
             /** Format: double */
             dropOffRate?: number;
+        };
+        ApiResponseListEventAnalyticsResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["EventAnalyticsResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        EventAnalyticsResponse: {
+            eventName?: string;
+            /** Format: int64 */
+            count?: number;
+            /** Format: int64 */
+            uniqueUsers?: number;
+            category?: string;
+            /** Format: double */
+            impact?: number;
+            /** Format: double */
+            trend?: number;
+            /** Format: date-time */
+            lastSeen?: string;
         };
         ApiResponseEventTimelineResponse: {
             success?: boolean;
@@ -1290,7 +1550,55 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseProjectResponse"];
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
+    getProjectSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseProjectSettingsResponse"];
+                };
+            };
+        };
+    };
+    updateProjectSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseProjectSettingsResponse"];
                 };
             };
         };
@@ -1390,7 +1698,9 @@ export interface operations {
     sessionStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-API-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -1414,7 +1724,9 @@ export interface operations {
     sessionEnd: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-API-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -1438,7 +1750,9 @@ export interface operations {
     trackPageView: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-API-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -1462,7 +1776,9 @@ export interface operations {
     trackEvent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-API-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -1821,13 +2137,127 @@ export interface operations {
             };
         };
     };
-    getTrackingScript: {
+    getApiKeys: {
+        parameters: {
+            query: {
+                projectId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListApiKeyResponse"];
+                };
+            };
+        };
+    };
+    createApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateApiKeyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseApiKeyCreatedResponse"];
+                };
+            };
+        };
+    };
+    rotateApiKey: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                trackingKey: string;
+                id: number;
             };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseApiKeyCreatedResponse"];
+                };
+            };
+        };
+    };
+    revokeApiKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseApiKeyResponse"];
+                };
+            };
+        };
+    };
+    getTrackingScript: {
+        parameters: {
+            query?: {
+                key?: string;
+            };
+            header?: never;
+            path: {
+                apiKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+        };
+    };
+    getTrackingScript_1: {
+        parameters: {
+            query?: {
+                key?: string;
+            };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -1945,6 +2375,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseUserResponse"];
+                };
+            };
+        };
+    };
+    getApiKeyById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseApiKeyResponse"];
+                };
+            };
+        };
+    };
+    getApiKeyStats: {
+        parameters: {
+            query: {
+                projectId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseApiKeyStatsResponse"];
                 };
             };
         };
@@ -2090,6 +2564,8 @@ export interface operations {
         parameters: {
             query: {
                 projectId: number;
+                from?: string;
+                to?: string;
                 limit?: number;
             };
             header?: never;
@@ -2104,7 +2580,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ApiResponseListStatEntry"];
+                    "*/*": components["schemas"]["ApiResponseListEventAnalyticsResponse"];
                 };
             };
         };
