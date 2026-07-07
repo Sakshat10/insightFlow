@@ -39,12 +39,12 @@ export class ProjectService {
         domain: p.domain || "unknown.com",
         status: p.projectStatus === 1 ? "active" : "inactive",
         plan: "Growth", // fallback
-        tracking: p.trackingKey ? "verified" : "pending",
+        tracking: (p as any).trackingKey ? "verified" : "pending",
         lastActivity: "Active",
         color: getProjectColor(id),
         visitors: 0, // dynamic visitor count can be loaded from stats or defaults
         conversionRate: 0,
-        trackingKey: p.trackingKey || "",
+        trackingKey: (p as any).trackingKey || "",
       };
     });
   }
@@ -62,12 +62,12 @@ export class ProjectService {
       domain: p.domain || "unknown.com",
       status: p.projectStatus === 1 ? "active" : "inactive",
       plan: "Growth",
-      tracking: p.trackingKey ? "verified" : "pending",
+      tracking: (p as any).trackingKey ? "verified" : "pending",
       lastActivity: "Active",
       color: getProjectColor(p.id || id),
       visitors: 0,
       conversionRate: 0,
-      trackingKey: p.trackingKey || "",
+      trackingKey: (p as any).trackingKey || "",
     };
   }
 
@@ -91,13 +91,39 @@ export class ProjectService {
       domain: p.domain || "unknown.com",
       status: p.projectStatus === 1 ? "active" : "inactive",
       plan: "Growth",
-      tracking: p.trackingKey ? "verified" : "pending",
+      tracking: (p as any).trackingKey ? "verified" : "pending",
       lastActivity: "Just created",
       color: getProjectColor(p.id || 0),
       visitors: 0,
+      runningRate: 0,
       conversionRate: 0,
-      trackingKey: p.trackingKey || "",
-    };
+      trackingKey: (p as any).trackingKey || "",
+    } as any;
+  }
+
+  static async getProjectSettings(id: number): Promise<components["schemas"]["ProjectSettingsResponse"]> {
+    const response = await ProjectRepository.getProjectSettings(id);
+    const data = response?.data;
+    if (!data) {
+      throw new Error(response?.message || "Failed to fetch project settings");
+    }
+    return data;
+  }
+
+  static async updateProjectSettings(id: number, request: components["schemas"]["ProjectSettingsRequest"]): Promise<components["schemas"]["ProjectSettingsResponse"]> {
+    const response = await ProjectRepository.updateProjectSettings(id, request);
+    const data = response?.data;
+    if (!data) {
+      throw new Error(response?.message || "Failed to update project settings");
+    }
+    return data;
+  }
+
+  static async deleteProject(id: number): Promise<void> {
+    const response = await ProjectRepository.deleteProject(id);
+    if (response && !response.success) {
+      throw new Error(response.message || "Failed to delete project");
+    }
   }
 }
 export type { ProjectStatsResponse };
