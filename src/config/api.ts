@@ -31,6 +31,7 @@ export const apiEndpoints = {
     base: "/projects",
     stats: "/projects/stats",
     detail: (id: string | number) => `/projects/${id}`,
+    settings: (id: string | number) => `/projects/${id}/settings`,
   },
   events: {
     base: "/events",
@@ -49,10 +50,17 @@ export const apiEndpoints = {
   },
   apiKeys: {
     base: "/api-keys",
+    detail: (id: string | number) => `/api-keys/${id}`,
+    stats: "/api-keys/stats",
+    rotate: (id: string | number) => `/api-keys/${id}/rotate`,
+    revoke: (id: string | number) => `/api-keys/${id}/revoke`,
   },
   settings: {
     profile: "/settings/profile",
     organization: "/settings/org",
+  },
+  users: {
+    detail: (id: string | number) => `/users/${id}`,
   },
 } as const;
 
