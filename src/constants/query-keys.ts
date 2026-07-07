@@ -79,4 +79,11 @@ export const SAVED_FUNNEL_QUERY_KEYS = {
   detail: (id: number) => [...SAVED_FUNNEL_QUERY_KEYS.all, "detail", id] as const,
 } as const;
 
+export const API_KEY_QUERY_KEYS = {
+  all: ["api-keys"] as const,
+  list: (projectId: number) => [...API_KEY_QUERY_KEYS.all, "list", projectId] as const,
+  detail: (id: number) => [...API_KEY_QUERY_KEYS.all, "detail", id] as const,
+  stats: (projectId: number) => [...API_KEY_QUERY_KEYS.all, "stats", projectId] as const,
+} as const;
+
 export type QueryKeys = typeof queryKeys;
