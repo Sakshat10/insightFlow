@@ -207,20 +207,6 @@ export function Sidebar() {
 
       {/* Bottom user section */}
       <div className="border-t border-border p-2">
-        <div className="mb-1 flex gap-1">
-          <Link
-            href="#"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
-          >
-            <Bell className="h-3.5 w-3.5" />
-          </Link>
-          <Link
-            href="#"
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] text-muted-foreground hover:bg-sidebar-accent hover:text-foreground transition-colors"
-          >
-            <HelpCircle className="h-3.5 w-3.5" />
-          </Link>
-        </div>
         <DropdownMenu>
           <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-sidebar-accent transition-colors outline-none">
             <Avatar className="h-6 w-6 flex-shrink-0">
