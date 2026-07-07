@@ -7,14 +7,13 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { useProjects, useProjectStats, CreateProjectDialog } from "@/features/projects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useActiveProject } from "@/providers/ActiveProjectProvider";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Plus,
   Search,
   ExternalLink,
-  Settings,
-  CheckCircle2,
-  Clock,
   Globe,
   AlertCircle,
 } from "lucide-react";
@@ -22,6 +21,8 @@ import {
 export default function ProjectsPage() {
   const [search, setSearch] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const { setActiveProjectId } = useActiveProject();
+  const router = useRouter();
 
   const {
     data: projects = [],
@@ -43,6 +44,11 @@ export default function ProjectsPage() {
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.domain.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleProjectClick = (projectId: number) => {
+    setActiveProjectId(projectId);
+    router.push("/dashboard");
+  };
 
   return (
     <AppLayout>
@@ -72,8 +78,8 @@ export default function ProjectsPage() {
         <div className="p-6 space-y-4">
           {/* Summary Row */}
           {statsLoading ? (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {[1, 2, 3, 4].map((i) => (
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              {[1, 2].map((i) => (
                 <div key={i} className="rounded-lg border border-border bg-card px-4 py-3.5 animate-pulse space-y-2">
                   <div className="h-4 bg-muted rounded w-2/3" />
                   <div className="h-6 bg-muted rounded w-1/3" />
@@ -91,15 +97,10 @@ export default function ProjectsPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {[
                 { label: "Total Projects", value: stats?.totalProjects ?? 0 },
                 { label: "Active", value: stats?.activeProjects ?? 0 },
-                {
-                  label: "Total Visitors",
-                  value: (stats?.totalPageViews ?? 0).toLocaleString(),
-                },
-                { label: "Tracking Verified", value: stats?.activeProjects ?? 0 },
               ].map((stat) => (
                 <div key={stat.label} className="rounded-lg border border-border bg-card px-4 py-3.5">
                   <p className="text-[12px] font-medium text-muted-foreground mb-1">{stat.label}</p>
@@ -157,17 +158,20 @@ export default function ProjectsPage() {
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <Link
-                          href={`/projects/${project.id}`}
+                        <button
+                          onClick={() => handleProjectClick(project.id)}
                           className="flex h-9 w-9 items-center justify-center rounded-lg text-[13px] font-bold text-white flex-shrink-0 hover:opacity-90 transition-opacity"
                           style={{ backgroundColor: project.color }}
                         >
                           {project.name.substring(0, 2).toUpperCase()}
-                        </Link>
-                        <div>
-                          <Link href={`/projects/${project.id}`} className="text-[14px] font-semibold text-foreground hover:text-primary transition-colors">
+                        </button>
+                        <div className="text-left">
+                          <button
+                            onClick={() => handleProjectClick(project.id)}
+                            className="block text-[14px] font-semibold text-foreground hover:text-primary transition-colors text-left"
+                          >
                             {project.name}
-                          </Link>
+                          </button>
                           <a
                             href={`https://${project.domain}`}
                             target="_blank"
@@ -185,57 +189,23 @@ export default function ProjectsPage() {
                       </div>
                     </div>
 
-                    {/* Metrics */}
-                    <div className="grid grid-cols-3 gap-0 divide-x divide-border rounded-lg border border-border bg-muted/20 overflow-hidden">
-                      <div className="px-3 py-2">
-                        <p className="text-[10px] text-muted-foreground mb-0.5">Visitors</p>
-                        <p className="text-[14px] font-semibold tabular-nums text-foreground">
-                          {project.visitors > 0 ? project.visitors.toLocaleString() : "—"}
-                        </p>
-                      </div>
-                      <div className="px-3 py-2">
-                        <p className="text-[10px] text-muted-foreground mb-0.5">Conv. Rate</p>
-                        <p className="text-[14px] font-semibold tabular-nums text-foreground">
-                          {project.conversionRate > 0 ? `${project.conversionRate}%` : "—"}
-                        </p>
-                      </div>
-                      <div className="px-3 py-2">
-                        <p className="text-[10px] text-muted-foreground mb-0.5">Plan</p>
-                        <p className="text-[13px] font-medium text-foreground">{project.plan}</p>
-                      </div>
-                    </div>
-
                     {/* Footer */}
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-2">
-                        {project.tracking === "verified" ? (
-                          <div className="flex items-center gap-1.5 text-[11px] text-emerald-600">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Tracking active
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-[11px] text-amber-600">
-                            <Clock className="h-3 w-3" />
-                            Pending verification
-                          </div>
-                        )}
-                        <span className="text-[11px] text-muted-foreground">·</span>
                         <span className="text-[11px] text-muted-foreground">
                           {project.lastActivity}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link href="/dashboard">
-                          <Button variant="ghost" size="sm" className="h-6 text-[11px]">
-                            View Analytics
-                          </Button>
-                        </Link>
-                        <Link href={`/projects/${project.id}`}>
-                          <Button variant="ghost" size="sm" className="h-6 gap-1 text-[11px]">
-                            <Settings className="h-3 w-3" />
-                          </Button>
-                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-[11px]"
+                          onClick={() => handleProjectClick(project.id)}
+                        >
+                          View Analytics
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -245,7 +215,7 @@ export default function ProjectsPage() {
               {/* New Project Card */}
               <div
                 onClick={() => setCreateDialogOpen(true)}
-                className="group flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border bg-transparent hover:border-primary/40 hover:bg-muted/20 transition-all min-h-[180px]"
+                className="group flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border bg-transparent hover:border-primary/40 hover:bg-muted/20 transition-all min-h-[140px]"
               >
                 <div className="flex flex-col items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border group-hover:border-primary/40 transition-colors">
