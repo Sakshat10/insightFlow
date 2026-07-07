@@ -6,6 +6,8 @@ type ApiResponsePagedResponseProjectResponse = components["schemas"]["ApiRespons
 type ApiResponseProjectResponse = components["schemas"]["ApiResponseProjectResponse"];
 type ApiResponseProjectStatsResponse = components["schemas"]["ApiResponseProjectStatsResponse"];
 type CreateProjectRequest = components["schemas"]["CreateProjectRequest"];
+type ApiResponseProjectSettingsResponse = components["schemas"]["ApiResponseProjectSettingsResponse"];
+type ProjectSettingsRequest = components["schemas"]["ProjectSettingsRequest"];
 
 export class ProjectRepository {
   static async getProjects(): Promise<ApiResponsePagedResponseProjectResponse> {
@@ -38,6 +40,33 @@ export class ProjectRepository {
   static async createProject(request: CreateProjectRequest): Promise<ApiResponseProjectResponse> {
     try {
       const response = await apiClient.post<ApiResponseProjectResponse>(apiEndpoints.projects.base, request);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async getProjectSettings(id: number): Promise<ApiResponseProjectSettingsResponse> {
+    try {
+      const response = await apiClient.get<ApiResponseProjectSettingsResponse>(apiEndpoints.projects.settings(id));
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async updateProjectSettings(id: number, request: ProjectSettingsRequest): Promise<ApiResponseProjectSettingsResponse> {
+    try {
+      const response = await apiClient.put<ApiResponseProjectSettingsResponse>(apiEndpoints.projects.settings(id), request);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async deleteProject(id: number): Promise<any> {
+    try {
+      const response = await apiClient.delete<any>(apiEndpoints.projects.detail(id));
       return response.data;
     } catch (error) {
       handleApiError(error);
