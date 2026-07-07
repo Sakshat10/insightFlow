@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthStorage } from "@/lib/auth/auth-storage";
 import { Sidebar } from "./sidebar";
@@ -12,16 +12,22 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const authenticated = typeof window !== "undefined" ? AuthStorage.isAuthenticated() : false;
 
   useEffect(() => {
-    if (!authenticated) {
+    if (mounted && !authenticated) {
       router.push("/login");
     }
-  }, [authenticated, router]);
+  }, [mounted, authenticated, router]);
 
-  // Render nothing if unauthenticated, to avoid layout shift before redirect
-  if (!authenticated) {
+  // Render nothing during SSR or before hydration is complete
+  if (!mounted || !authenticated) {
     return null;
   }
 
