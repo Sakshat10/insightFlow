@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
-      <body className="min-h-full bg-background font-sans antialiased">
+      <body className="min-h-full bg-background font-sans antialiased" suppressHydrationWarning>
         <QueryProvider>
           <ActiveProjectProvider>
             <TooltipProvider>
