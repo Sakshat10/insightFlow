@@ -95,6 +95,22 @@ export class AnalyticsRepository {
     }
   }
 
+  static async getTrafficSources(params: {
+    projectId: number;
+    from: string;
+    to: string;
+  }): Promise<components["schemas"]["ApiResponseTrafficSourcesResponse"]> {
+    try {
+      const response = await apiClient.get<components["schemas"]["ApiResponseTrafficSourcesResponse"]>(
+        apiEndpoints.analytics.trafficSources,
+        { params }
+      );
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
   static async getTopPages(projectId: number, limit?: number): Promise<ApiResponseListStatEntry> {
     try {
       const response = await apiClient.get<ApiResponseListStatEntry>(apiEndpoints.analytics.topPages, {
@@ -117,9 +133,9 @@ export class AnalyticsRepository {
     }
   }
 
-  static async getEvents(projectId: number, limit?: number): Promise<ApiResponseListStatEntry> {
+  static async getEvents(projectId: number, limit?: number): Promise<components["schemas"]["ApiResponseListEventAnalyticsResponse"]> {
     try {
-      const response = await apiClient.get<ApiResponseListStatEntry>(apiEndpoints.analytics.events, {
+      const response = await apiClient.get<components["schemas"]["ApiResponseListEventAnalyticsResponse"]>(apiEndpoints.analytics.events, {
         params: { projectId, limit },
       });
       return response.data;
