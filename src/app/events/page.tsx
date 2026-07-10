@@ -18,6 +18,21 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  useConversionGoalsQuery,
+  useCreateConversionGoalMutation,
+  useDeactivateConversionGoalMutation,
+  useUpdateConversionGoalMutation,
+} from "@/features/analytics";
+import {
   BarChart,
   Bar,
   XAxis,
@@ -171,6 +186,9 @@ const SkeletonRow = () => (
     <td className="px-4 py-3 text-center hidden lg:table-cell">
       <div className="h-5 w-16 bg-muted rounded-full mx-auto animate-pulse" />
     </td>
+    <td className="px-4 py-3 text-center">
+      <div className="h-7 w-20 bg-muted rounded mx-auto animate-pulse" />
+    </td>
     <td className="px-4 py-3 text-right hidden md:table-cell">
       <div className="h-4 w-16 bg-muted rounded ml-auto animate-pulse" />
     </td>
@@ -200,6 +218,84 @@ export default function EventsPage() {
   const [size] = useState(10);
   const [sortBy] = useState("createdAt");
   const [sortDir] = useState<"asc" | "desc">("desc");
+
+  // Conversion Goal states
+  const [conversionName, setConversionName] = useState("");
+  const [isMarkDialogOpen, setIsMarkDialogOpen] = useState(false);
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [eventToMark, setEventToMark] = useState<any>(null);
+  const [goalToRename, setGoalToRename] = useState<any>(null);
+
+  const { data: conversionGoals = [] } = useConversionGoalsQuery(activeProjectId || 0);
+
+  const createGoalMutation = useCreateConversionGoalMutation();
+  const deactivateGoalMutation = useDeactivateConversionGoalMutation();
+  const updateGoalMutation = useUpdateConversionGoalMutation();
+
+  const activeGoalsMap = new Map(
+    conversionGoals
+      .filter((goal) => goal.status === "ACTIVE")
+      .map((goal) => [goal.eventName, goal])
+  );
+
+  const handleMarkAsConversionClick = (event: any) => {
+    setEventToMark(event);
+    setConversionName(event.displayName || event.name);
+    setIsMarkDialogOpen(true);
+  };
+
+  const handleMarkAsConversionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeProjectId || !eventToMark) return;
+    try {
+      await createGoalMutation.mutateAsync({
+        projectId: activeProjectId,
+        name: conversionName,
+        eventName: eventToMark.name,
+      });
+      alert("Conversion goal created successfully.");
+      setIsMarkDialogOpen(false);
+      setEventToMark(null);
+    } catch (err: any) {
+      alert(err.message || "Failed to create conversion goal.");
+    }
+  };
+
+  const handleRemoveConversionClick = async (goal: any) => {
+    if (!goal?.id) return;
+    const confirmed = confirm(
+      "Future occurrences of this event will no longer be counted as conversions. Historical conversion data will remain unchanged."
+    );
+    if (!confirmed) return;
+    try {
+      await deactivateGoalMutation.mutateAsync(goal.id);
+      alert("Conversion goal removed successfully.");
+    } catch (err: any) {
+      alert(err.message || "Failed to remove conversion goal.");
+    }
+  };
+
+  const handleRenameClick = (goal: any) => {
+    setGoalToRename(goal);
+    setConversionName(goal.name || "");
+    setIsRenameDialogOpen(true);
+  };
+
+  const handleRenameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!goalToRename?.id) return;
+    try {
+      await updateGoalMutation.mutateAsync({
+        id: goalToRename.id,
+        request: { name: conversionName },
+      });
+      alert("Conversion goal renamed successfully.");
+      setIsRenameDialogOpen(false);
+      setGoalToRename(null);
+    } catch (err: any) {
+      alert(err.message || "Failed to rename conversion goal.");
+    }
+  };
 
   // Query events
   const {
@@ -412,6 +508,9 @@ export default function EventsPage() {
                     <th className="px-4 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground hidden lg:table-cell">
                       Impact
                     </th>
+                    <th className="px-4 py-2.5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      Conversion
+                    </th>
                     <th className="px-4 py-2.5 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground hidden md:table-cell">
                       Trend
                     </th>
@@ -425,7 +524,7 @@ export default function EventsPage() {
                     [...Array(size)].map((_, idx) => <SkeletonRow key={idx} />)
                   ) : filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                      <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted-foreground">
                         No events found
                       </td>
                     </tr>
@@ -444,9 +543,11 @@ export default function EventsPage() {
                               <Zap className="h-3.5 w-3.5 text-muted-foreground" />
                             </div>
                             <div>
-                              <p className="text-[13px] font-medium text-foreground">
-                                {event.displayName}
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-[13px] font-medium text-foreground">
+                                  {event.displayName}
+                                </p>
+                              </div>
                               <p className="text-[11px] font-mono text-muted-foreground">
                                 {event.name}
                               </p>
@@ -480,6 +581,27 @@ export default function EventsPage() {
                           >
                             {event.conversionImpact}
                           </span>
+                        </td>
+                        <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                          {activeGoalsMap.has(event.name) ? (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleRemoveConversionClick(activeGoalsMap.get(event.name))}
+                              className="h-7 text-[11px] px-2.5"
+                            >
+                              Remove
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleMarkAsConversionClick(event)}
+                              className="h-7 text-[11px] px-2.5 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200"
+                            >
+                              Mark as Conversion
+                            </Button>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-right hidden md:table-cell">
                           <span className="text-[13px] text-muted-foreground">--</span>
@@ -570,17 +692,28 @@ export default function EventsPage() {
             ) : eventDetail ? (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-[16px] font-semibold text-foreground">
-                    {eventDetail.displayName}
-                  </h2>
-                  <p className="text-[12px] font-mono text-muted-foreground mt-0.5">
-                    Event Name: {eventDetail.name}
-                  </p>
-                  {eventDetail.id && (
-                    <p className="text-[11px] font-mono text-muted-foreground">
-                      ID: {eventDetail.id}
-                    </p>
-                  )}
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-[16px] font-semibold text-foreground">
+                        {eventDetail.displayName}
+                      </h2>
+                      <p className="text-[12px] font-mono text-muted-foreground mt-0.5">
+                        Event Name: {eventDetail.name}
+                      </p>
+                      {eventDetail.id && (
+                        <p className="text-[11px] font-mono text-muted-foreground">
+                          ID: {eventDetail.id}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      {activeGoalsMap.has(eventDetail.name) && (
+                        <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2.5 py-1">
+                          Active Conversion
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -613,6 +746,75 @@ export default function EventsPage() {
           </div>
         </SheetContent>
       </Sheet>
+      {/* Mark as Conversion Dialog */}
+      <Dialog open={isMarkDialogOpen} onOpenChange={setIsMarkDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handleMarkAsConversionSubmit}>
+            <DialogHeader>
+              <DialogTitle className="text-base font-semibold">Mark Event as Conversion</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Define this event as a conversion goal. Future occurrences will be tracked as conversions.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="conversionName" className="text-[12px]">Goal Name</Label>
+                <Input
+                  id="conversionName"
+                  value={conversionName}
+                  onChange={(e) => setConversionName(e.target.value)}
+                  placeholder="e.g. Completed Purchase"
+                  required
+                  className="h-9 text-[13px]"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsMarkDialogOpen(false)} className="h-8 text-[12px]">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createGoalMutation.isPending} className="h-8 text-[12px]">
+                {createGoalMutation.isPending ? "Creating..." : "Save Goal"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename Conversion Dialog */}
+      <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handleRenameSubmit}>
+            <DialogHeader>
+              <DialogTitle className="text-base font-semibold">Rename Conversion Goal</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Update the display name of this conversion goal.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="renameGoalName" className="text-[12px]">Goal Name</Label>
+                <Input
+                  id="renameGoalName"
+                  value={conversionName}
+                  onChange={(e) => setConversionName(e.target.value)}
+                  placeholder="e.g. Completed Purchase"
+                  required
+                  className="h-9 text-[13px]"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsRenameDialogOpen(false)} className="h-8 text-[12px]">
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateGoalMutation.isPending} className="h-8 text-[12px]">
+                {updateGoalMutation.isPending ? "Renaming..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
