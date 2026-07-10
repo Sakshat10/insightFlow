@@ -270,6 +270,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/conversion-goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all conversion goals for a project */
+        get: operations["getConversionGoals"];
+        put?: never;
+        /** Create a new conversion goal or reactivate an inactive one */
+        post: operations["createConversionGoal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conversion-goals/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile conversion status of historical events for a project */
+        post: operations["reconcile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/register": {
         parameters: {
             query?: never;
@@ -390,6 +425,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/conversion-goals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get conversion goal by ID */
+        get: operations["getConversionGoalById"];
+        put?: never;
+        post?: never;
+        /** Soft delete / deactivate a conversion goal */
+        delete: operations["deactivateConversionGoal"];
+        options?: never;
+        head?: never;
+        /** Update an existing conversion goal name or status */
+        patch: operations["updateConversionGoal"];
+        trace?: never;
+    };
     "/tracking/script/{apiKey}": {
         parameters: {
             query?: never;
@@ -475,6 +529,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/live-activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get recent live activity for a project */
+        get: operations["getRecentActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/live-activity/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Subscribe to project live activity stream */
+        get: operations["subscribe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/events/{id}": {
         parameters: {
             query?: never;
@@ -552,6 +640,23 @@ export interface paths {
         };
         /** Get daily traffic data for a project */
         get: operations["getTraffic"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analytics/traffic-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get traffic sources by acquisition source */
+        get: operations["getTrafficSources"];
         put?: never;
         post?: never;
         delete?: never;
@@ -705,6 +810,23 @@ export interface paths {
         };
         /** Get country distribution */
         get: operations["getCountryStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analytics/conversions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get daily conversion statistics for a project */
+        get: operations["getDailyConversions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1025,6 +1147,33 @@ export interface components {
             properties?: string;
             isConversion?: boolean;
         };
+        CreateConversionGoalRequest: {
+            /** Format: int32 */
+            projectId: number;
+            name: string;
+            eventName: string;
+        };
+        ApiResponseConversionGoalResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["ConversionGoalResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        ConversionGoalResponse: {
+            /** Format: int32 */
+            id?: number;
+            /** Format: int32 */
+            projectId?: number;
+            name?: string;
+            eventName?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
         RegisterRequest: {
             username: string;
             email: string;
@@ -1121,6 +1270,11 @@ export interface components {
             /** Format: date-time */
             timestamp?: string;
         };
+        UpdateConversionGoalRequest: {
+            name?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+        };
         ApiResponsePagedResponseSessionResponse: {
             success?: boolean;
             message?: string;
@@ -1202,6 +1356,37 @@ export interface components {
             first?: boolean;
             last?: boolean;
         };
+        ApiResponseListLiveActivityResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["LiveActivityResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        LiveActivityResponse: {
+            activityId?: string;
+            /** @enum {string} */
+            type?: "SESSION_START" | "PAGE_VIEW" | "CUSTOM_EVENT" | "CONVERSION";
+            /** Format: int32 */
+            projectId?: number;
+            /** Format: int64 */
+            sourceId?: number;
+            visitorId?: string;
+            sessionId?: string;
+            eventName?: string;
+            title?: string;
+            url?: string;
+            country?: string;
+            browser?: string;
+            deviceType?: string;
+            isConversion?: boolean;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        SseEmitter: {
+            /** Format: int64 */
+            timeout?: number;
+        };
         ApiResponseListFunnelResponse: {
             success?: boolean;
             message?: string;
@@ -1228,6 +1413,13 @@ export interface components {
             totalPages?: number;
             first?: boolean;
             last?: boolean;
+        };
+        ApiResponseListConversionGoalResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["ConversionGoalResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
         };
         ApiResponseListApiKeyResponse: {
             success?: boolean;
@@ -1270,6 +1462,29 @@ export interface components {
         TrafficResponse: {
             dataPoints?: components["schemas"]["TrafficDataPoint"][];
             granularity?: string;
+        };
+        ApiResponseTrafficSourcesResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["TrafficSourcesResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        TrafficSourceItemResponse: {
+            source?: string;
+            /** @enum {string} */
+            sourceType?: "DIRECT" | "ORGANIC_SEARCH" | "SOCIAL" | "REFERRAL" | "UNKNOWN";
+            /** Format: int64 */
+            sessions?: number;
+            /** Format: int64 */
+            uniqueVisitors?: number;
+            /** Format: double */
+            percentage?: number;
+        };
+        TrafficSourcesResponse: {
+            /** Format: int64 */
+            totalSessions?: number;
+            sources?: components["schemas"]["TrafficSourceItemResponse"][];
         };
         ApiResponseListStatEntry: {
             success?: boolean;
@@ -1383,6 +1598,19 @@ export interface components {
         };
         EventTimelineResponse: {
             timeline?: components["schemas"]["EventTimelineDay"][];
+        };
+        ApiResponseListDailyConversionResponse: {
+            success?: boolean;
+            message?: string;
+            data?: components["schemas"]["DailyConversionResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        DailyConversionResponse: {
+            /** Format: date */
+            date?: string;
+            /** Format: int64 */
+            conversions?: number;
         };
     };
     responses: never;
@@ -2045,6 +2273,74 @@ export interface operations {
             };
         };
     };
+    getConversionGoals: {
+        parameters: {
+            query: {
+                projectId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListConversionGoalResponse"];
+                };
+            };
+        };
+    };
+    createConversionGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateConversionGoalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseConversionGoalResponse"];
+                };
+            };
+        };
+    };
+    reconcile: {
+        parameters: {
+            query: {
+                projectId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
     register: {
         parameters: {
             query?: never;
@@ -2227,6 +2523,76 @@ export interface operations {
             };
         };
     };
+    getConversionGoalById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseConversionGoalResponse"];
+                };
+            };
+        };
+    };
+    deactivateConversionGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseConversionGoalResponse"];
+                };
+            };
+        };
+    };
+    updateConversionGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateConversionGoalRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseConversionGoalResponse"];
+                };
+            };
+        };
+    };
     getTrackingScript: {
         parameters: {
             query?: {
@@ -2337,6 +2703,51 @@ export interface operations {
             };
         };
     };
+    getRecentActivity: {
+        parameters: {
+            query: {
+                projectId: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListLiveActivityResponse"];
+                };
+            };
+        };
+    };
+    subscribe: {
+        parameters: {
+            query: {
+                projectId: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["SseEmitter"];
+                };
+            };
+        };
+    };
     getEventById: {
         parameters: {
             query?: never;
@@ -2442,6 +2853,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseTrafficResponse"];
+                };
+            };
+        };
+    };
+    getTrafficSources: {
+        parameters: {
+            query: {
+                projectId: number;
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseTrafficSourcesResponse"];
                 };
             };
         };
@@ -2649,6 +3084,29 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseListStatEntry"];
+                };
+            };
+        };
+    };
+    getDailyConversions: {
+        parameters: {
+            query: {
+                projectId: number;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListDailyConversionResponse"];
                 };
             };
         };
