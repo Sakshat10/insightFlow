@@ -13,7 +13,7 @@ export function useRegister() {
     mutationFn: (request) => AuthService.register(request),
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.auth.currentUser, data.user);
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.currentUser });
+      queryClient.invalidateQueries();
     },
   });
 }
