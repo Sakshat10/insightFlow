@@ -13,7 +13,7 @@ export function useLogin() {
     mutationFn: (request) => AuthService.login(request),
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.auth.currentUser, data.user);
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.currentUser });
+      queryClient.invalidateQueries();
     },
   });
 }
