@@ -86,4 +86,11 @@ export const API_KEY_QUERY_KEYS = {
   stats: (projectId: number) => [...API_KEY_QUERY_KEYS.all, "stats", projectId] as const,
 } as const;
 
+export const CONVERSION_GOAL_QUERY_KEYS = {
+  all: ["conversion-goals"] as const,
+  list: (projectId: number) => [...CONVERSION_GOAL_QUERY_KEYS.all, "list", projectId] as const,
+  detail: (id: number) => [...CONVERSION_GOAL_QUERY_KEYS.all, "detail", id] as const,
+  analytics: (projectId: number, days: number) => [...CONVERSION_GOAL_QUERY_KEYS.all, "analytics", projectId, days] as const,
+} as const;
+
 export type QueryKeys = typeof queryKeys;
