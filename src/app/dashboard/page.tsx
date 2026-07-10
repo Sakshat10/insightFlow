@@ -26,7 +26,8 @@ import {
   useTrafficAnalytics,
   useReferrerAnalytics,
   useTopPagesAnalytics,
-  useEventList,
+  useConversionAnalyticsQuery,
+  useLiveActivity,
 } from "@/features/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -63,31 +64,62 @@ export default function DashboardPage() {
 
   const days = dateRange === "7d" ? 7 : dateRange === "90d" ? 90 : 30;
 
+  const toDateObj = new Date();
+  const fromDateObj = new Date();
+  fromDateObj.setDate(toDateObj.getDate() - days);
+  const formatDateString = (d: Date) => d.toISOString().split("T")[0];
+  const from = formatDateString(fromDateObj);
+  const to = formatDateString(toDateObj);
+
   const { data: overview, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = useAnalyticsOverview(projectId);
   const { data: traffic = [], isLoading: trafficLoading, isError: trafficError, refetch: refetchTraffic } = useTrafficAnalytics(projectId, days);
-  const { data: referrers = [], isLoading: referrersLoading, isError: referrersError } = useReferrerAnalytics(projectId);
+  const { data: referrers = [], isLoading: referrersLoading, isError: referrersError, refetch: refetchReferrers } = useReferrerAnalytics(projectId, from, to);
   const { data: topPages = [], isLoading: topPagesLoading, isError: topPagesError } = useTopPagesAnalytics(projectId, 6);
-  const { data: eventsData, isLoading: eventsLoading, isError: eventsError } = useEventList(projectId, 1, 6);
+  const {
+    activities: liveActivities = [],
+    isLoading: liveActivitiesLoading,
+    isError: liveActivitiesError,
+    streamStatus,
+  } = useLiveActivity(projectId);
+  const { data: conversions = [], isLoading: conversionsLoading, isError: conversionsError, refetch: refetchConversions } = useConversionAnalyticsQuery(projectId, days);
 
   const handleRefresh = () => {
     refetchOverview();
     refetchTraffic();
+    refetchReferrers();
+    refetchConversions();
   };
 
   const chartData = traffic;
 
   const conversionRate = overview?.totalSessions ? parseFloat(((overview.totalEvents / overview.totalSessions) * 100).toFixed(1)) : 0;
 
-  const liveActivity = eventsLoading || eventsError || !eventsData ? [] : eventsData.events.map(e => ({
-    id: e.id,
-    type: e.category === "revenue" ? ("purchase" as const) : e.category === "acquisition" ? ("signup" as const) : ("custom" as const),
-    user: "Anonymous User",
-    email: null,
-    description: `${e.displayName} — ${e.description}`,
-    timestamp: e.lastSeen,
-    value: e.category === "revenue" ? "$299" : null,
-    metadata: {},
-  }));
+  const getStatusIndicator = (status: string) => {
+    switch (status) {
+      case "CONNECTED":
+        return (
+          <span className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-semibold text-emerald-700 uppercase tracking-wider border border-emerald-200">
+            <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+            Live
+          </span>
+        );
+      case "CONNECTING":
+      case "RECONNECTING":
+        return (
+          <span className="flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-semibold text-amber-700 uppercase tracking-wider border border-amber-200 animate-pulse">
+            Connecting
+          </span>
+        );
+      case "ERROR":
+      case "DISCONNECTED":
+      default:
+        return (
+          <span className="flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[9px] font-semibold text-muted-foreground uppercase tracking-wider border border-border">
+            Offline
+          </span>
+        );
+    }
+  };
 
   return (
     <AppLayout>
@@ -240,24 +272,24 @@ export default function DashboardPage() {
                 title="Conversions"
                 description="Daily completed goals"
               >
-                {trafficLoading ? (
+                {conversionsLoading ? (
                   <div className="h-[160px] flex items-center justify-center">
                     <Skeleton className="h-full w-full" />
                   </div>
-                ) : trafficError ? (
+                ) : conversionsError ? (
                   <div className="h-[160px] flex items-center justify-center text-xs text-destructive">
                     Failed to load conversion goals.
                   </div>
                 ) : (
                   <ResponsiveContainer width="100%" height={160}>
-                    <BarChart data={chartData.slice(-14)} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                    <BarChart data={conversions} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.6} vertical={false} />
                       <XAxis
                         dataKey="date"
                         tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
                         tickLine={false}
                         axisLine={false}
-                        interval={2}
+                        interval={days === 90 ? 10 : days === 30 ? 3 : 1}
                       />
                       <YAxis
                         tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
@@ -378,18 +410,29 @@ export default function DashboardPage() {
             <CardSection
               title="Live Activity"
               description="Real-time event stream"
+              actions={getStatusIndicator(streamStatus)}
               noPadding
             >
-              {eventsLoading ? (
+              {liveActivitiesLoading ? (
                 <div className="p-4 space-y-3">
                   {[1, 2, 3].map((i) => (
                     <Skeleton key={i} className="h-12 w-full" />
                   ))}
                 </div>
-              ) : eventsError ? (
-                <div className="p-4 text-xs text-destructive">Failed to load activity stream.</div>
+              ) : liveActivitiesError && liveActivities.length === 0 ? (
+                <div className="p-4 text-xs text-destructive flex flex-col items-center justify-center min-h-[160px] text-center border-dashed border border-border rounded-lg m-4">
+                  <span className="font-semibold text-[13px] text-red-800">Failed to load live activity</span>
+                  <span className="text-[11px] text-red-600/80 mt-1">Please check your connection and try again.</span>
+                </div>
+              ) : liveActivities.length === 0 ? (
+                <div className="p-6 text-center flex flex-col items-center justify-center min-h-[160px] border-dashed border border-border rounded-lg m-4">
+                  <span className="text-[13px] font-semibold text-muted-foreground font-heading">No recent activity</span>
+                  <span className="text-[11px] text-muted-foreground/80 mt-1 max-w-[200px]">
+                    New sessions, page views, events, and conversions will appear here in real time.
+                  </span>
+                </div>
               ) : (
-                <ActivityTimeline items={liveActivity.slice(0, 6)} />
+                <ActivityTimeline items={liveActivities.slice(0, 6)} />
               )}
             </CardSection>
           </div>
