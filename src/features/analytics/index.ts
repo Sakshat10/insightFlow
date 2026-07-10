@@ -18,3 +18,12 @@ export {
   useUpdateFunnel,
   useDeleteFunnel,
 } from "./hooks/useSavedFunnels";
+export {
+  useConversionGoalsQuery,
+  useConversionGoalByIdQuery,
+  useCreateConversionGoalMutation,
+  useUpdateConversionGoalMutation,
+  useDeactivateConversionGoalMutation,
+  useConversionAnalyticsQuery,
+} from "./hooks/useConversionGoals";
+export { useLiveActivity } from "./hooks/useLiveActivity";
