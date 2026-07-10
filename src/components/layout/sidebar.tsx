@@ -17,6 +17,7 @@ import {
   Plus,
   Bell,
   HelpCircle,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -207,36 +208,27 @@ export function Sidebar() {
 
       {/* Bottom user section */}
       <div className="border-t border-border p-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-sidebar-accent transition-colors outline-none">
-            <Avatar className="h-6 w-6 flex-shrink-0">
-              <AvatarFallback className="bg-indigo-100 text-indigo-700 text-[10px] font-semibold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1 text-left">
-              <p className="truncate text-[12px] font-medium text-foreground leading-tight">
-                {username}
-              </p>
-              <p className="truncate text-[11px] text-muted-foreground leading-tight">
-                {email}
-              </p>
-            </div>
-            <ChevronDown className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-[200px]" side="top">
-            <DropdownMenuItem className="text-[13px]">Profile</DropdownMenuItem>
-            <DropdownMenuItem className="text-[13px]">Billing</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              disabled={logoutMutation.isPending}
-              className="text-[13px] text-destructive cursor-pointer disabled:opacity-50"
-            >
+        <button
+          onClick={handleSignOut}
+          disabled={logoutMutation.isPending}
+          className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-sidebar-accent transition-colors outline-none text-left disabled:opacity-50"
+          title="Sign out"
+        >
+          <Avatar className="h-6 w-6 flex-shrink-0">
+            <AvatarFallback className="bg-indigo-100 text-indigo-700 text-[10px] font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1 text-left">
+            <p className="truncate text-[12px] font-medium text-foreground leading-tight">
+              {username}
+            </p>
+            <p className="truncate text-[11px] text-muted-foreground leading-tight">
               {logoutMutation.isPending ? "Signing out..." : "Sign out"}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </p>
+          </div>
+          <LogOut className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+        </button>
       </div>
     </aside>
   );
