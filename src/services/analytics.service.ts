@@ -239,6 +239,24 @@ export class AnalyticsService {
     });
   }
 
+  static async getTrafficSources(params: {
+    projectId: number;
+    from: string;
+    to: string;
+  }): Promise<FrontReferrer[]> {
+    const res = await AnalyticsRepository.getTrafficSources(params);
+    const items = res?.data?.sources || [];
+    return items.map((item) => {
+      const name = item.source || "Direct";
+      return {
+        source: name,
+        visitors: item.uniqueVisitors || 0,
+        percentage: item.percentage || 0,
+        color: REFERRER_COLORS[name] || "#94A3B8",
+      };
+    });
+  }
+
   static async getTopPages(projectId: number, limit?: number): Promise<FrontTopPage[]> {
     const res = await AnalyticsRepository.getTopPages(projectId, limit);
     const items = res?.data || [];
@@ -260,8 +278,8 @@ export class AnalyticsService {
     const res = await AnalyticsRepository.getEvents(projectId, limit);
     const items = res?.data || [];
     return items.map((item, index) => {
-      const name = item.label || "custom_event";
-      let category = "engagement";
+      const name = item.eventName || "custom_event";
+      let category = item.category || "engagement";
       let impact: "Critical" | "High" | "Medium" | "Low" = "Medium";
       if (name.includes("signup")) {
         category = "acquisition";
@@ -278,10 +296,10 @@ export class AnalyticsService {
         name,
         displayName: name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, " "),
         count: item.count || 0,
-        uniqueUsers: Math.round((item.count || 0) * 0.9),
+        uniqueUsers: item.uniqueUsers || 0,
         conversionImpact: impact,
-        trend: item.percentage || 0,
-        lastSeen: "Just now",
+        trend: item.trend || 0,
+        lastSeen: item.lastSeen ? new Date(item.lastSeen).toLocaleDateString() : "Just now",
         category,
         description: `Backend event tracked for ${name}`,
       };
