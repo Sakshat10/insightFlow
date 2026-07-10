@@ -26,6 +26,8 @@ export const apiEndpoints = {
     events: "/analytics/events",
     eventTimeline: "/analytics/event-timeline",
     funnel: "/analytics/funnel",
+    trafficSources: "/analytics/traffic-sources",
+    conversions: "/analytics/conversions",
   },
   projects: {
     base: "/projects",
@@ -61,6 +63,14 @@ export const apiEndpoints = {
   },
   users: {
     detail: (id: string | number) => `/users/${id}`,
+  },
+  conversionGoals: {
+    base: "/conversion-goals",
+    detail: (id: string | number) => `/conversion-goals/${id}`,
+  },
+  liveActivity: {
+    base: "/live-activity",
+    stream: "/live-activity/stream",
   },
 } as const;
 
