@@ -8,6 +8,7 @@ type ApiResponseProjectStatsResponse = components["schemas"]["ApiResponseProject
 type CreateProjectRequest = components["schemas"]["CreateProjectRequest"];
 type ApiResponseProjectSettingsResponse = components["schemas"]["ApiResponseProjectSettingsResponse"];
 type ProjectSettingsRequest = components["schemas"]["ProjectSettingsRequest"];
+type UpdateProjectRequest = components["schemas"]["UpdateProjectRequest"];
 
 export class ProjectRepository {
   static async getProjects(): Promise<ApiResponsePagedResponseProjectResponse> {
@@ -58,6 +59,24 @@ export class ProjectRepository {
   static async updateProjectSettings(id: number, request: ProjectSettingsRequest): Promise<ApiResponseProjectSettingsResponse> {
     try {
       const response = await apiClient.put<ApiResponseProjectSettingsResponse>(apiEndpoints.projects.settings(id), request);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async updateProject(id: number, request: UpdateProjectRequest): Promise<ApiResponseProjectResponse> {
+    try {
+      const response = await apiClient.put<ApiResponseProjectResponse>(apiEndpoints.projects.detail(id), request);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  }
+
+  static async restoreProject(id: number): Promise<ApiResponseProjectResponse> {
+    try {
+      const response = await apiClient.put<ApiResponseProjectResponse>(`${apiEndpoints.projects.detail(id)}/restore`);
       return response.data;
     } catch (error) {
       handleApiError(error);
