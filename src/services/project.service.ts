@@ -119,6 +119,48 @@ export class ProjectService {
     return data;
   }
 
+  static async updateProject(id: number, request: components["schemas"]["UpdateProjectRequest"]): Promise<FrontProject> {
+    const response = await ProjectRepository.updateProject(id, request);
+    const p = response?.data;
+    if (!p) {
+      throw new Error(response?.message || "Failed to update project");
+    }
+    return {
+      id: p.id || id,
+      name: p.projectName || "Unnamed Project",
+      domain: p.domain || "unknown.com",
+      status: p.projectStatus === 1 ? "active" : "inactive",
+      plan: "Growth",
+      tracking: (p as any).trackingKey ? "verified" : "pending",
+      lastActivity: "Active",
+      color: getProjectColor(p.id || id),
+      visitors: 0,
+      conversionRate: 0,
+      trackingKey: (p as any).trackingKey || "",
+    };
+  }
+
+  static async restoreProject(id: number): Promise<FrontProject> {
+    const response = await ProjectRepository.restoreProject(id);
+    const p = response?.data;
+    if (!p) {
+      throw new Error(response?.message || "Failed to restore project");
+    }
+    return {
+      id: p.id || id,
+      name: p.projectName || "Unnamed Project",
+      domain: p.domain || "unknown.com",
+      status: p.projectStatus === 1 ? "active" : "inactive",
+      plan: "Growth",
+      tracking: (p as any).trackingKey ? "verified" : "pending",
+      lastActivity: "Active",
+      color: getProjectColor(p.id || id),
+      visitors: 0,
+      conversionRate: 0,
+      trackingKey: (p as any).trackingKey || "",
+    };
+  }
+
   static async deleteProject(id: number): Promise<void> {
     const response = await ProjectRepository.deleteProject(id);
     if (response && !response.success) {
